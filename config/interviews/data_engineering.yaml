@@ -1,0 +1,309 @@
+# Interview Tree: Data Engineering
+# For: Data pipelines, ETL, ingestion, transformation projects
+
+id: data_engineering
+name: Data Engineering
+version: "1.0.0"
+
+sections:
+  - id: basics
+    name: Basic Information
+    questions:
+      - id: project_name
+        prompt: |
+          What is this data engineering project called?
+          (e.g., "Sales Data Pipeline", "Customer 360 Integration")
+        type: text
+        required: true
+
+      - id: client
+        prompt: Who is this project for?
+        type: text
+        required: false
+
+      - id: deadline
+        prompt: When is this needed?
+        type: text
+        required: false
+
+  - id: purpose
+    name: Purpose
+    questions:
+      - id: pipeline_type
+        prompt: |
+          What type of data engineering work is this?
+
+          1. ETL pipeline (extract, transform, load)
+          2. Data ingestion (bring data into a system)
+          3. Data transformation (reshape/clean existing data)
+          4. Data integration (combine multiple sources)
+          5. Data migration (move from one system to another)
+          6. Real-time streaming (continuous data flow)
+        type: choice
+        options: [etl, ingestion, transformation, integration, migration, streaming]
+        required: true
+
+      - id: business_question
+        prompt: |
+          What business problem does this solve?
+          What will stakeholders be able to do once this is built?
+        type: text
+        required: true
+        follow_up:
+          condition: "len(answer) < 30"
+          prompt: |
+            Can you elaborate on the business value?
+            Who uses this data and for what decisions?
+
+      - id: success_criteria
+        prompt: |
+          What does success look like?
+          (e.g., "Data refreshed daily by 6am", "No duplicate records")
+        type: list
+        required: false
+
+  - id: sources
+    name: Data Sources
+    questions:
+      - id: de_sources
+        prompt: |
+          What are the source systems/files?
+          List all data sources that will feed into this pipeline.
+        type: list
+        required: true
+
+      - id: source_types
+        prompt: |
+          What types of sources are these?
+
+          1. Databases (SQL Server, PostgreSQL, Oracle, etc.)
+          2. Files (CSV, Excel, JSON, Parquet, etc.)
+          3. APIs (REST, SOAP, GraphQL)
+          4. Cloud storage (S3, Azure Blob, GCS)
+          5. Streaming (Kafka, Event Hub, Kinesis)
+          6. Mixed (combination of above)
+        type: choice
+        options: [databases, files, apis, cloud_storage, streaming, mixed]
+        required: true
+
+      - id: source_access
+        prompt: |
+          How will you access these sources?
+          (credentials, VPN, API keys, etc.)
+        type: text
+        required: false
+
+      - id: data_volume
+        prompt: |
+          What's the approximate data volume?
+
+          1. Small (< 1 GB)
+          2. Medium (1-100 GB)
+          3. Large (100 GB - 1 TB)
+          4. Very large (> 1 TB)
+        type: choice
+        options: [small, medium, large, very_large]
+        required: true
+
+      - id: update_frequency
+        prompt: |
+          How often does the source data change?
+
+          1. Real-time (continuous)
+          2. Hourly
+          3. Daily
+          4. Weekly
+          5. Monthly
+          6. Ad-hoc/irregular
+        type: choice
+        options: [realtime, hourly, daily, weekly, monthly, adhoc]
+        required: true
+
+  - id: transformations
+    name: Transformations
+    questions:
+      - id: transformations
+        prompt: |
+          What transformations are needed?
+          List the main data transformations/business rules.
+        type: list
+        required: true
+
+      - id: data_quality
+        prompt: |
+          What data quality checks are needed?
+          (e.g., null checks, range validation, referential integrity)
+        type: list
+        required: false
+
+      - id: deduplication
+        prompt: Is deduplication required?
+        type: boolean
+        required: true
+
+      - id: dedup_logic
+        prompt: |
+          What is the deduplication logic?
+          (Which fields identify a unique record?)
+        type: text
+        condition: "deduplication == True"
+
+      - id: historical_tracking
+        prompt: |
+          Do you need to track historical changes (SCD)?
+
+          1. No history needed (overwrite)
+          2. Type 1 (overwrite, keep latest)
+          3. Type 2 (track all changes with dates)
+          4. Type 3 (keep current and previous)
+        type: choice
+        options: [none, type1, type2, type3]
+        required: true
+
+  - id: destination
+    name: Destination
+    questions:
+      - id: output_format
+        prompt: |
+          What is the output/destination?
+
+          1. Database table(s)
+          2. Data warehouse (Snowflake, BigQuery, Redshift)
+          3. Data lake (S3, ADLS, GCS)
+          4. Files (CSV, Parquet, JSON)
+          5. API/service
+          6. Multiple destinations
+        type: choice
+        options: [database, warehouse, lake, files, api, multiple]
+        required: true
+
+      - id: output_schema
+        prompt: |
+          Describe the expected output schema/structure.
+          (List key tables/files and their main columns)
+        type: text
+        required: true
+
+      - id: partitioning
+        prompt: |
+          Is data partitioning needed?
+          (e.g., by date, region, customer)
+        type: text
+        required: false
+
+  - id: orchestration
+    name: Orchestration & Scheduling
+    questions:
+      - id: schedule
+        prompt: |
+          How often should this pipeline run?
+
+          1. On-demand (manual trigger)
+          2. Hourly
+          3. Daily
+          4. Weekly
+          5. Event-driven (triggered by new data)
+        type: choice
+        options: [on_demand, hourly, daily, weekly, event_driven]
+        required: true
+
+      - id: run_time
+        prompt: |
+          When should it run? Any time constraints?
+          (e.g., "Before 6am EST", "After source system batch completes")
+        type: text
+        condition: "schedule in ['hourly', 'daily', 'weekly']"
+
+      - id: dependencies
+        prompt: |
+          Are there upstream/downstream dependencies?
+          (Other jobs that must run before/after)
+        type: text
+        required: false
+
+      - id: failure_handling
+        prompt: |
+          How should failures be handled?
+
+          1. Alert and stop
+          2. Retry automatically (with limit)
+          3. Skip and continue
+          4. Rollback to previous state
+        type: choice
+        options: [alert_stop, retry, skip_continue, rollback]
+        required: true
+
+  - id: tech
+    name: Technical Requirements
+    questions:
+      - id: tech_stack
+        prompt: |
+          Any technology preferences/constraints?
+          (e.g., "Must use Azure Data Factory", "Python only")
+        type: text
+        required: false
+        default: "Python (Kearney standard)"
+
+      - id: environment
+        prompt: |
+          Where will this run?
+
+          1. Local machine
+          2. On-premise server
+          3. Cloud (Azure, AWS, GCP)
+          4. Client infrastructure
+        type: choice
+        options: [local, on_premise, cloud, client]
+        required: true
+
+      - id: sensitive_data
+        prompt: Does this pipeline handle sensitive/PII data?
+        type: boolean
+        required: true
+
+      - id: sensitive_fields
+        prompt: |
+          Which fields are sensitive?
+          What handling is required? (masking, encryption, etc.)
+        type: text
+        condition: "sensitive_data == True"
+
+  - id: documentation
+    name: Documentation
+    questions:
+      - id: include_diagrams
+        prompt: Do you need architecture or data flow diagrams?
+        type: boolean
+        required: true
+
+      - id: diagram_format
+        prompt: |
+          What format for diagrams?
+
+          1. SVG (scalable, editable)
+          2. PNG (fixed resolution)
+          3. Both formats
+        type: choice
+        options: [svg, png, both]
+        condition: "include_diagrams == True"
+
+      - id: documentation_level
+        prompt: |
+          What level of documentation is needed?
+
+          1. Minimal (code comments only)
+          2. Standard (README + key docs)
+          3. Comprehensive (full technical docs)
+        type: choice
+        options: [minimal, standard, comprehensive]
+        required: true
+
+  - id: notes
+    name: Additional Notes
+    questions:
+      - id: notes
+        prompt: |
+          Any additional requirements, constraints, or context?
+          (Optional - type 'skip' or press Enter to skip)
+        type: text
+        required: false

@@ -1,0 +1,317 @@
+# Interview Tree: Research
+# For: Market research, competitive analysis, synthesis projects
+
+id: research
+name: Research & Synthesis
+version: "1.0.0"
+
+sections:
+  - id: basics
+    name: Basic Information
+    questions:
+      - id: project_name
+        prompt: |
+          What is this research project called?
+          (e.g., "European EV Market Assessment", "Competitor Deep Dive")
+        type: text
+        required: true
+
+      - id: client
+        prompt: Who is this research for?
+        type: text
+        required: false
+
+      - id: deadline
+        prompt: When is this research needed?
+        type: text
+        required: false
+
+  - id: purpose
+    name: Purpose
+    questions:
+      - id: research_type
+        prompt: |
+          What type of research is this?
+
+          1. Market sizing/assessment
+          2. Competitive analysis
+          3. Industry trends/landscape
+          4. Customer/consumer research
+          5. Technology assessment
+          6. Best practices/benchmarking
+          7. Due diligence
+          8. General synthesis
+        type: choice
+        options: [market_sizing, competitive, industry_trends, customer, technology, benchmarking, due_diligence, synthesis]
+        required: true
+
+      - id: research_questions
+        prompt: |
+          What are the key research questions?
+          List the specific questions this research should answer.
+        type: list
+        required: true
+
+      - id: business_context
+        prompt: |
+          What is the business context?
+          How will this research be used?
+        type: text
+        required: true
+        follow_up:
+          condition: "len(answer) < 30"
+          prompt: |
+            Can you elaborate on the strategic context?
+            What decision or action will this inform?
+
+      - id: success_criteria
+        prompt: |
+          What does successful research look like?
+          What must the deliverable contain?
+        type: list
+        required: false
+
+  - id: scope
+    name: Scope
+    questions:
+      - id: geographic_scope
+        prompt: |
+          What is the geographic scope?
+          (e.g., "US only", "Western Europe", "Global")
+        type: text
+        required: true
+
+      - id: industry_scope
+        prompt: |
+          What industries/sectors are in scope?
+        type: list
+        required: true
+
+      - id: time_horizon
+        prompt: |
+          What time horizon matters?
+
+          1. Current state only
+          2. Historical (past 3-5 years)
+          3. Forward-looking (next 3-5 years)
+          4. Both historical and forward-looking
+        type: choice
+        options: [current, historical, forward, both]
+        required: true
+
+      - id: depth_vs_breadth
+        prompt: |
+          Is depth or breadth more important?
+
+          1. Broad overview (many topics, less depth)
+          2. Balanced (moderate coverage and depth)
+          3. Deep dive (fewer topics, more depth)
+        type: choice
+        options: [broad, balanced, deep]
+        required: true
+
+  - id: competitive
+    name: Competitive Focus
+    condition: "research_type == 'competitive'"
+    questions:
+      - id: competitors
+        prompt: |
+          Which competitors should be analyzed?
+          List specific companies or "identify top N".
+        type: list
+        required: true
+
+      - id: competitive_dimensions
+        prompt: |
+          What dimensions to compare?
+          (e.g., pricing, features, market share, strategy)
+        type: list
+        required: true
+
+      - id: competitive_intelligence
+        prompt: |
+          Any specific competitive intelligence questions?
+          (e.g., "What is their go-to-market strategy?")
+        type: list
+        required: false
+
+  - id: market
+    name: Market Focus
+    condition: "research_type == 'market_sizing'"
+    questions:
+      - id: market_definition
+        prompt: |
+          How do you define the market?
+          What's included/excluded?
+        type: text
+        required: true
+
+      - id: sizing_approach
+        prompt: |
+          What sizing approach is preferred?
+
+          1. Top-down (TAM/SAM/SOM)
+          2. Bottom-up (unit economics)
+          3. Both approaches
+          4. No preference
+        type: choice
+        options: [top_down, bottom_up, both, no_preference]
+        required: true
+
+      - id: market_segments
+        prompt: |
+          What market segments matter?
+          (e.g., by customer type, product category, region)
+        type: list
+        required: false
+
+  - id: sources
+    name: Sources
+    questions:
+      - id: research_sources
+        prompt: |
+          What types of sources should be used?
+
+          1. Public sources only (free)
+          2. Include paid databases (Gartner, IBISWorld, etc.)
+          3. Include primary research (interviews)
+          4. All available sources
+        type: choice
+        options: [public_only, include_paid, include_primary, all_sources]
+        required: true
+
+      - id: existing_materials
+        prompt: |
+          Are there existing materials to build on?
+          (Prior research, internal data, client documents)
+        type: text
+        required: false
+
+      - id: source_restrictions
+        prompt: |
+          Any source restrictions or preferences?
+          (e.g., "Avoid competitor websites", "Prefer academic sources")
+        type: text
+        required: false
+
+  - id: deliverables
+    name: Deliverables
+    questions:
+      - id: synthesis_format
+        prompt: |
+          What format for the final deliverable?
+
+          1. Slide deck
+          2. Written report/memo
+          3. Data pack (Excel/tables)
+          4. One-pager/executive summary
+          5. Multiple formats
+        type: choice
+        options: [slides, report, data_pack, one_pager, multiple]
+        required: true
+
+      - id: page_count
+        prompt: |
+          Approximate length/size?
+          (e.g., "10-15 slides", "5 page memo")
+        type: text
+        required: false
+
+      - id: appendix_needed
+        prompt: Do you need a detailed appendix with sources?
+        type: boolean
+        required: true
+
+      - id: data_tables
+        prompt: |
+          Are underlying data tables needed?
+          (Excel workbook with source data)
+        type: boolean
+        required: true
+
+  - id: visualizations
+    name: Visualization Preferences
+    questions:
+      - id: include_visualizations
+        prompt: Will this research include charts or visualizations?
+        type: boolean
+        required: true
+
+      - id: visualization_format
+        prompt: |
+          What format for charts/visualizations?
+
+          1. SVG (scalable, editable, recommended for reports)
+          2. PNG (fixed resolution, for presentations)
+          3. Both (SVG for editing, PNG for embedding)
+        type: choice
+        options: [svg, png, both]
+        condition: "include_visualizations == True"
+
+      - id: visualization_size
+        prompt: |
+          What size/aspect ratio for visualizations?
+
+          1. Presentation (16:9, 1920x1080)
+          2. Document (4:3, 1200x900)
+          3. Square (1:1, 1200x1200)
+          4. Banner (3:1, 1800x600)
+          5. Custom
+        type: choice
+        options: [presentation, document, square, banner, custom]
+        condition: "include_visualizations == True"
+
+      - id: visualization_custom_size
+        prompt: |
+          Enter custom dimensions (e.g., "1400x800"):
+        type: text
+        condition: "visualization_size == 'custom'"
+
+  - id: insights
+    name: Key Insights
+    questions:
+      - id: include_insights
+        prompt: |
+          Should the deliverable include executive-level insights?
+          (Key takeaways, "so what" implications, recommendations)
+        type: boolean
+        required: true
+
+      - id: insight_depth
+        prompt: |
+          What level of insight detail?
+
+          1. Headlines only (brief bullet points)
+          2. Moderate (1-2 sentence explanations)
+          3. Detailed (full narrative with implications)
+        type: choice
+        options: [headlines, moderate, detailed]
+        condition: "include_insights == True"
+
+      - id: insight_audience
+        prompt: |
+          Who is the primary audience for insights?
+
+          1. Executive/C-suite (strategic, high-level)
+          2. Senior management (actionable, balanced)
+          3. Working team (detailed, implementation-focused)
+        type: choice
+        options: [executive, senior_management, working_team]
+        condition: "include_insights == True"
+
+  - id: notes
+    name: Additional Notes
+    questions:
+      - id: confidentiality
+        prompt: |
+          Any confidentiality considerations?
+          (Can't reveal client name, sensitive topics, etc.)
+        type: text
+        required: false
+
+      - id: notes
+        prompt: |
+          Any additional context, constraints, or requirements?
+          (Optional - press Enter to skip)
+        type: text
+        required: false

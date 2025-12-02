@@ -1,0 +1,25 @@
+Region,Quarter,Revenue,Units_Sold,Product_Category
+EMEA,Q1,1250000,4500,Enterprise Software
+EMEA,Q2,1380000,4800,Enterprise Software
+EMEA,Q3,1420000,5100,Enterprise Software
+EMEA,Q4,1650000,5800,Enterprise Software
+Americas,Q1,2100000,7200,Enterprise Software
+Americas,Q2,2350000,7800,Enterprise Software
+Americas,Q3,2480000,8200,Enterprise Software
+Americas,Q4,2890000,9500,Enterprise Software
+APAC,Q1,890000,3200,Enterprise Software
+APAC,Q2,920000,3400,Enterprise Software
+APAC,Q3,1050000,3800,Enterprise Software
+APAC,Q4,1180000,4200,Enterprise Software
+EMEA,Q1,450000,12000,Cloud Services
+EMEA,Q2,520000,14000,Cloud Services
+EMEA,Q3,610000,16500,Cloud Services
+EMEA,Q4,780000,21000,Cloud Services
+Americas,Q1,890000,24000,Cloud Services
+Americas,Q2,1020000,27500,Cloud Services
+Americas,Q3,1180000,32000,Cloud Services
+Americas,Q4,1450000,39000,Cloud Services
+APAC,Q1,320000,8500,Cloud Services
+APAC,Q2,380000,10200,Cloud Services
+APAC,Q3,450000,12100,Cloud Services
+APAC,Q4,580000,15600,Cloud Services

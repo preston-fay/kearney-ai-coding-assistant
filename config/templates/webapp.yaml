@@ -1,0 +1,64 @@
+# Web Application Project Template Configuration
+
+template: webapp
+version: "1.0"
+description: Web application scaffolding with KDS styles
+
+intake_template: general.yaml
+
+default_phases:
+  - name: "Phase 1: Setup"
+    tasks:
+      - Define application structure
+      - Set up project scaffolding
+      - Configure KDS styles
+
+  - name: "Phase 2: Component Development"
+    tasks:
+      - Create page layouts
+      - Build UI components
+      - Implement styling
+
+  - name: "Phase 3: Integration"
+    tasks:
+      - Connect components
+      - Add interactivity
+      - Implement data handling
+
+  - name: "Phase 4: Review & Finalize"
+    tasks:
+      - Run brand compliance check
+      - Test functionality
+      - Document usage
+
+tools_used:
+  - core.brand_guard
+
+output_directories:
+  - outputs/
+
+notes: |
+  Web application projects focus on scaffolding and styling.
+  Complex backend logic is outside the scope of this template.
+  All styles must adhere to KDS guidelines.
+
+style_guidelines:
+  primary_color: "#7823DC"
+  background_dark: "#1E1E1E"
+  background_light: "#FFFFFF"
+  font_family: "Inter, Arial, sans-serif"
+
+css_variables: |
+  :root {
+    --kds-primary: #7823DC;
+    --kds-bg-dark: #1E1E1E;
+    --kds-bg-light: #FFFFFF;
+    --kds-text-light: #FFFFFF;
+    --kds-text-dark: #333333;
+    --kds-gray-100: #F5F5F5;
+    --kds-gray-200: #E0E0E0;
+    --kds-gray-300: #CCCCCC;
+    --kds-gray-400: #999999;
+    --kds-gray-500: #666666;
+    --kds-gray-600: #333333;
+  }

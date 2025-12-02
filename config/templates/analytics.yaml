@@ -1,0 +1,53 @@
+# Analytics Project Template Configuration
+
+template: analytics
+version: "1.0"
+description: Data analysis projects with charts and reports
+
+intake_template: analytics.yaml
+
+default_phases:
+  - name: "Phase 1: Data Preparation"
+    tasks:
+      - Profile all data sources
+      - Identify data quality issues
+      - Clean and validate data
+      - Create processed datasets
+
+  - name: "Phase 2: Analysis"
+    tasks:
+      - Calculate key metrics
+      - Perform requested analysis
+      - Identify insights and patterns
+
+  - name: "Phase 3: Visualization"
+    tasks:
+      - Create required charts
+      - Validate chart compliance
+
+  - name: "Phase 4: Documentation"
+    tasks:
+      - Generate analysis summary
+      - Create presentation (if requested)
+
+  - name: "Phase 5: Review & Export"
+    tasks:
+      - Run brand compliance check
+      - Export final deliverables
+
+tools_used:
+  - core.data_profiler
+  - core.chart_engine
+  - core.slide_engine
+  - core.brand_guard
+
+output_directories:
+  - outputs/charts/
+  - outputs/reports/
+  - exports/
+
+typical_deliverables:
+  - Data profile report
+  - Analysis charts
+  - Executive summary
+  - PowerPoint presentation

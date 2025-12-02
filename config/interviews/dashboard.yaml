@@ -1,0 +1,207 @@
+# Interview Tree: Dashboards
+# For: Executive, operational, analytical dashboards and client portals
+
+id: dashboard
+name: Dashboard
+version: "1.0.0"
+
+sections:
+  - id: basics
+    name: Basic Information
+    questions:
+      - id: project_name
+        prompt: |
+          What is this dashboard called?
+          (e.g., "Sales Performance Dashboard", "Operations Monitor")
+        type: text
+        required: true
+
+      - id: client
+        prompt: Who is this dashboard for?
+        type: text
+        required: false
+
+      - id: deadline
+        prompt: When is this dashboard needed?
+        type: text
+        required: false
+
+  - id: purpose
+    name: Purpose
+    questions:
+      - id: dashboard_type
+        prompt: |
+          What type of dashboard is this?
+
+          1. Executive (high-level KPIs for leadership)
+          2. Operational (real-time monitoring)
+          3. Analytical (exploration and deep-dives)
+          4. Client portal (external-facing)
+        type: choice
+        options: [executive, operational, analytical, client_portal]
+        required: true
+
+      - id: business_question
+        prompt: |
+          What decisions will this dashboard inform?
+          What questions should users be able to answer?
+        type: text
+        required: true
+
+      - id: view_frequency
+        prompt: |
+          How often will users view this?
+
+          1. Multiple times daily
+          2. Daily
+          3. Weekly
+          4. Ad-hoc (as needed)
+        type: choice
+        options: [multiple_daily, daily, weekly, ad_hoc]
+        required: true
+
+  - id: data
+    name: Data Sources
+    questions:
+      - id: data_sources
+        prompt: |
+          What data sources will feed the dashboard?
+          Describe or list the files/tables/APIs.
+        type: text
+        required: true
+
+      - id: update_frequency
+        prompt: |
+          How often does the data update?
+
+          1. Real-time (streaming)
+          2. Hourly
+          3. Daily
+          4. Weekly
+          5. Static (one-time load)
+        type: choice
+        options: [realtime, hourly, daily, weekly, static]
+        required: true
+
+      - id: history_range
+        prompt: |
+          How much historical data should be available?
+          (e.g., "Last 12 months", "All time", "Rolling 90 days")
+        type: text
+        required: false
+
+  - id: metrics
+    name: Views and Metrics
+    questions:
+      - id: key_metrics
+        prompt: |
+          What are the key metrics to display?
+          List the most important KPIs.
+        type: list
+        required: true
+
+      - id: views
+        prompt: |
+          What views or pages do you need?
+          (e.g., "Overview", "Regional breakdown", "Trend analysis")
+        type: list
+        required: true
+
+      - id: drill_down
+        prompt: |
+          What drill-down capabilities are needed?
+          (e.g., "Click region to see stores", "Click date to see hourly")
+        type: text
+        required: false
+
+      - id: filters
+        prompt: |
+          What filters should users have access to?
+          (e.g., "Date range", "Region", "Product category")
+        type: list
+        required: false
+
+  - id: interactivity
+    name: Interactivity
+    questions:
+      - id: interactivity
+        prompt: |
+          How interactive should this be?
+
+          1. High (filters, drill-downs, hover details)
+          2. Medium (basic filters, some interactivity)
+          3. Low (minimal interaction)
+          4. Static (no interactivity, just display)
+        type: choice
+        options: [high, medium, low, static]
+        required: true
+
+      - id: export_capability
+        prompt: Should users be able to export data?
+        type: boolean
+        required: true
+
+      - id: alerts
+        prompt: |
+          Are there alerts or thresholds to highlight?
+          (e.g., "Red if sales < target", "Alert when inventory low")
+        type: text
+        required: false
+
+  - id: visualization_options
+    name: Visualization Options
+    questions:
+      - id: chart_format
+        prompt: |
+          What format for embedded charts?
+
+          1. SVG (recommended for web dashboards - scalable, crisp)
+          2. PNG (if SVG causes issues)
+        type: choice
+        options: [svg, png]
+        default: svg
+
+      - id: include_annotations
+        prompt: |
+          Should charts include annotations and insights?
+
+          1. Yes - key callouts on each chart
+          2. No - clean charts, context in surrounding text
+          3. On hover - insights appear on mouse hover
+        type: choice
+        options: [yes, no, on_hover]
+        default: yes
+        condition: "interactivity != 'static'"
+
+  - id: deployment
+    name: Deployment
+    questions:
+      - id: target_platform
+        prompt: |
+          Where will this be deployed?
+
+          1. HTML file (standalone, shareable)
+          2. Streamlit app (Python-based, interactive)
+          3. Tableau (spec/mockup for Tableau team)
+          4. Power BI (spec/mockup for Power BI team)
+          5. Specification only (design doc)
+        type: choice
+        options: [html, streamlit, tableau_spec, powerbi_spec, spec_only]
+        required: true
+
+      - id: access_control
+        prompt: |
+          Who needs access? Any authentication requirements?
+          (e.g., "Internal only", "Client stakeholders", "Public")
+        type: text
+        required: false
+
+  - id: notes
+    name: Additional Notes
+    questions:
+      - id: notes
+        prompt: |
+          Any additional requirements or constraints?
+          (Optional - press Enter to skip)
+        type: text
+        required: false

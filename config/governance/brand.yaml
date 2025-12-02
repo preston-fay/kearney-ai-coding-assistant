@@ -1,0 +1,252 @@
+# Kearney Design System (KDS) Brand Configuration
+# This file defines the brand rules enforced by core/brand_guard.py
+# DO NOT MODIFY unless authorized by the Kearney brand team
+
+version: "2.0"
+last_updated: "2025-12-01"
+
+# =============================================================================
+# COLOR PALETTE
+# =============================================================================
+colors:
+  primary:
+    name: "Kearney Purple"
+    hex: "#7823DC"
+    rgb: [120, 35, 220]
+    usage: "Primary accent, headlines, key UI elements"
+
+  background:
+    dark:
+      name: "Dark Background"
+      hex: "#1E1E1E"
+      rgb: [30, 30, 30]
+      usage: "Default background for charts and slides"
+    light:
+      name: "Light Background"
+      hex: "#FFFFFF"
+      rgb: [255, 255, 255]
+      usage: "Alternative background for print"
+
+  text:
+    light:
+      name: "Light Text"
+      hex: "#FFFFFF"
+      rgb: [255, 255, 255]
+      usage: "Text on dark backgrounds"
+    dark:
+      name: "Dark Text"
+      hex: "#333333"
+      rgb: [51, 51, 51]
+      usage: "Text on light backgrounds"
+
+  neutrals:
+    gray_100:
+      hex: "#F5F5F5"
+      usage: "Light backgrounds, cards"
+    gray_200:
+      hex: "#E0E0E0"
+      usage: "Dividers, borders"
+    gray_300:
+      hex: "#CCCCCC"
+      usage: "Disabled states"
+    gray_400:
+      hex: "#999999"
+      usage: "Secondary text"
+    gray_500:
+      hex: "#666666"
+      usage: "Body text on light"
+    gray_600:
+      hex: "#333333"
+      usage: "Headlines on light"
+
+  # Extended palette for data visualization (NO GREEN)
+  chart_palette:
+    - "#7823DC"  # Primary purple
+    - "#9B4DCA"  # Light purple
+    - "#5C1BA8"  # Dark purple
+    - "#B266FF"  # Bright purple
+    - "#4A148C"  # Deep purple
+    - "#666666"  # Gray
+    - "#999999"  # Light gray
+    - "#333333"  # Dark gray
+    - "#CE93D8"  # Pale purple
+    - "#7B1FA2"  # Purple variant
+
+# =============================================================================
+# FORBIDDEN COLORS
+# =============================================================================
+forbidden_colors:
+  description: "These colors are NEVER allowed in any output"
+  reason: "Green is commonly used for 'success' states. Kearney uses purple."
+
+  colors:
+    # Pure greens
+    - hex: "#00FF00"
+      name: "Pure Green"
+    - hex: "#008000"
+      name: "Green"
+    - hex: "#00FF7F"
+      name: "Spring Green"
+
+    # Material Design greens
+    - hex: "#1B5E20"
+      name: "Material Green 900"
+    - hex: "#2E7D32"
+      name: "Material Green 800"
+    - hex: "#388E3C"
+      name: "Material Green 700"
+    - hex: "#43A047"
+      name: "Material Green 600"
+    - hex: "#4CAF50"
+      name: "Material Green 500"
+    - hex: "#66BB6A"
+      name: "Material Green 400"
+    - hex: "#81C784"
+      name: "Material Green 300"
+    - hex: "#A5D6A7"
+      name: "Material Green 200"
+
+    # Green accents
+    - hex: "#00C853"
+      name: "Green Accent"
+    - hex: "#00E676"
+      name: "Green Accent Light"
+    - hex: "#69F0AE"
+      name: "Green Accent Lighter"
+    - hex: "#B9F6CA"
+      name: "Green Accent Lightest"
+
+    # Named greens
+    - hex: "#228B22"
+      name: "Forest Green"
+    - hex: "#32CD32"
+      name: "Lime Green"
+    - hex: "#90EE90"
+      name: "Light Green"
+    - hex: "#98FB98"
+      name: "Pale Green"
+    - hex: "#ADFF2F"
+      name: "Green Yellow"
+    - hex: "#7FFF00"
+      name: "Chartreuse"
+
+# =============================================================================
+# TYPOGRAPHY
+# =============================================================================
+typography:
+  primary_font:
+    name: "Inter"
+    fallback: "Arial"
+    type: "sans-serif"
+    source: "https://fonts.google.com/specimen/Inter"
+
+  weights:
+    regular: 400
+    medium: 500
+    semibold: 600
+
+  sizes:
+    # Presentations
+    slide_title: 32
+    slide_subtitle: 24
+    slide_body: 20
+    slide_caption: 12
+
+    # Charts
+    chart_title: 14
+    chart_label: 11
+    chart_annotation: 10
+
+    # Reports
+    report_h1: 24
+    report_h2: 20
+    report_h3: 16
+    report_body: 12
+
+# =============================================================================
+# CHART RULES
+# =============================================================================
+charts:
+  # Background
+  default_background: "dark"  # Always use dark mode
+  dark_background_color: "#1E1E1E"
+  light_background_color: "#FFFFFF"
+
+  # Grid
+  gridlines: false  # NO GRIDLINES - always false
+  gridlines_reason: "KDS requires clean charts without gridlines"
+
+  # Data labels
+  data_labels:
+    position: "outside"  # Labels outside bars/slices
+    font_size: 10
+    show_values: true
+
+  # Spines
+  show_top_spine: false
+  show_right_spine: false
+  show_left_spine: true
+  show_bottom_spine: true
+
+  # Legend
+  legend_frame: false
+
+# =============================================================================
+# PRESENTATION RULES
+# =============================================================================
+presentations:
+  # Dimensions
+  aspect_ratio: "16:9"
+  width_inches: 13.333
+  height_inches: 7.5
+
+  # Default mode
+  default_mode: "dark"
+
+  # Margins
+  left_margin_inches: 0.75
+  right_margin_inches: 0.75
+  top_margin_inches: 0.5
+
+  # Elements
+  title_alignment: "left"
+  bullet_style: "filled_circle"
+
+# =============================================================================
+# CONTENT RULES
+# =============================================================================
+content:
+  # Emojis
+  emojis_allowed: false
+  emojis_reason: "Professional consulting output should not contain emojis"
+
+  # Tone
+  tone: "professional"
+  avoid_words:
+    - "awesome"
+    - "amazing"
+    - "super"
+
+# =============================================================================
+# VALIDATION SEVERITY
+# =============================================================================
+validation:
+  forbidden_color:
+    severity: "error"
+    action: "block"
+
+  emoji_detected:
+    severity: "error"
+    action: "block"
+
+  gridlines_enabled:
+    severity: "error"
+    action: "block"
+
+  wrong_font:
+    severity: "warning"
+    action: "warn"
+
+  data_labels_inside:
+    severity: "warning"
+    action: "warn"

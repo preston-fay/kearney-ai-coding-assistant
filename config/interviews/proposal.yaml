@@ -1,0 +1,219 @@
+# Interview Tree: Proposal Content
+# For: RFP responses, proactive proposals, methodology sections, pricing docs
+
+id: proposal
+name: Proposal Content
+version: "1.0.0"
+
+sections:
+  - id: basics
+    name: Basic Information
+    questions:
+      - id: project_name
+        prompt: |
+          What is this proposal called?
+          (Client name + opportunity, e.g., "Acme Digital Transformation")
+        type: text
+        required: true
+
+      - id: client
+        prompt: Who is the prospective client?
+        type: text
+        required: true
+
+      - id: deadline
+        prompt: |
+          When is this proposal due?
+          (Format: YYYY-MM-DD)
+        type: text
+        required: true
+
+  - id: opportunity
+    name: Opportunity Details
+    questions:
+      - id: proposal_type
+        prompt: |
+          What type of proposal is this?
+
+          1. RFP response (responding to formal request)
+          2. Proactive proposal (unsolicited)
+          3. Sole source (non-competitive)
+          4. Contract extension
+        type: choice
+        options: [rfp_response, proactive, sole_source, extension]
+        required: true
+
+      - id: client_need
+        prompt: |
+          What is the client's stated need or problem?
+          Be specific about what they're trying to solve.
+        type: text
+        required: true
+        follow_up:
+          condition: "len(answer) < 50"
+          prompt: |
+            Can you elaborate on the client's challenge?
+            What pain points are they experiencing?
+
+      - id: opportunity_size
+        prompt: |
+          What is the opportunity size?
+          (Revenue estimate or strategic value)
+        type: text
+        required: false
+
+  - id: competitive
+    name: Competitive Context
+    questions:
+      - id: is_competitive
+        prompt: Is this a competitive situation?
+        type: boolean
+        required: true
+
+      - id: competitors
+        prompt: |
+          Who else is bidding?
+          List known competitors.
+        type: list
+        condition: "is_competitive == True"
+
+      - id: differentiators
+        prompt: |
+          What are our key differentiators?
+          Why should they choose Kearney?
+        type: list
+        required: true
+
+      - id: decision_criteria
+        prompt: |
+          What are the client's decision criteria?
+          (Price, expertise, relationships, methodology, etc.)
+        type: list
+        required: false
+
+  - id: solution
+    name: Proposed Solution
+    questions:
+      - id: approach
+        prompt: |
+          What approach/methodology are we proposing?
+          Describe the high-level solution.
+        type: text
+        required: true
+
+      - id: team_structure
+        prompt: |
+          What team structure and roles?
+          (e.g., "1 Partner, 2 Managers, 3 Consultants")
+        type: text
+        required: false
+
+      - id: timeline
+        prompt: |
+          What is the proposed timeline and phasing?
+          (e.g., "Phase 1: 4 weeks, Phase 2: 6 weeks")
+        type: text
+        required: false
+
+      - id: pricing_included
+        prompt: Is pricing included in this proposal?
+        type: boolean
+        required: true
+
+      - id: pricing_approach
+        prompt: |
+          What is the pricing approach?
+
+          1. Fixed fee
+          2. Time and materials
+          3. Value-based
+          4. Hybrid
+        type: choice
+        options: [fixed_fee, time_materials, value_based, hybrid]
+        condition: "pricing_included == True"
+
+  - id: content
+    name: Content Requirements
+    questions:
+      - id: sections
+        prompt: |
+          What sections are required?
+          Select all that apply (comma-separated numbers):
+
+          1. Executive summary
+          2. Understanding of need
+          3. Methodology/approach
+          4. Team and credentials
+          5. Timeline and milestones
+          6. Pricing
+          7. Case studies
+          8. Appendix
+        type: multi
+        options: [exec_summary, understanding, methodology, team, timeline, pricing, case_studies, appendix]
+        required: true
+
+      - id: tone
+        prompt: |
+          What is the required tone?
+
+          1. Formal (traditional consulting)
+          2. Conversational (modern, approachable)
+          3. Technical (detailed, precise)
+        type: choice
+        options: [formal, conversational, technical]
+        required: true
+
+      - id: page_limit
+        prompt: |
+          Are there page limits or format requirements?
+          (e.g., "Max 20 pages", "Must use client template")
+        type: text
+        required: false
+
+      - id: case_studies
+        prompt: |
+          Do you have case studies or credentials to include?
+          List relevant examples.
+        type: list
+        required: false
+
+  - id: visualizations
+    name: Visualization Preferences
+    questions:
+      - id: include_visualizations
+        prompt: Will this proposal include charts or diagrams?
+        type: boolean
+        required: true
+
+      - id: visualization_format
+        prompt: |
+          What format for charts/visualizations?
+
+          1. SVG (scalable, editable, recommended)
+          2. PNG (fixed resolution, for compatibility)
+          3. Both (SVG for editing, PNG for embedding)
+        type: choice
+        options: [svg, png, both]
+        condition: "include_visualizations == True"
+
+      - id: visualization_size
+        prompt: |
+          What size/aspect ratio for visualizations?
+
+          1. Presentation (16:9, 1920x1080)
+          2. Document (4:3, 1200x900)
+          3. Half slide (two-column, 960x720)
+          4. Custom
+        type: choice
+        options: [presentation, document, half_slide, custom]
+        condition: "include_visualizations == True"
+
+  - id: notes
+    name: Additional Notes
+    questions:
+      - id: notes
+        prompt: |
+          Any additional context, relationship history, or requirements?
+          (Optional - type 'skip' or press Enter to skip)
+        type: text
+        required: false

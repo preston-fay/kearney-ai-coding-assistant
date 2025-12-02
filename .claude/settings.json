@@ -1,0 +1,55 @@
+{
+  "model": "claude-sonnet-4-5-20250514",
+  "maxTokens": 8192,
+
+  "permissions": {
+    "allowedTools": [
+      "Read",
+      "Write(data/**)",
+      "Write(outputs/**)",
+      "Write(exports/**)",
+      "Write(project_state/**)",
+      "Bash(python core/*.py *)",
+      "Bash(.venv/Scripts/python core/*.py *)",
+      "Bash(.venv/bin/python core/*.py *)",
+      "Bash(git status)",
+      "Bash(git diff)",
+      "Bash(git add)",
+      "Bash(git commit)",
+      "Glob",
+      "Grep"
+    ],
+    "deny": [
+      "Read(.env*)",
+      "Read(**/secrets/**)",
+      "Write(.claude/**)",
+      "Write(CLAUDE.md)",
+      "Write(config/governance/**)",
+      "Write(core/**)",
+      "Write(bootstrap/**)",
+      "Bash(rm -rf *)",
+      "Bash(sudo *)",
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "Bash(pip install *)"
+    ]
+  },
+
+  "hooks": {
+    "PostToolUse:Write": [
+      {
+        "matcher": "outputs/**",
+        "command": "python core/hook_runner.py post-edit $file"
+      },
+      {
+        "matcher": "exports/**",
+        "command": "python core/hook_runner.py post-edit $file"
+      }
+    ],
+    "PreCommit": [
+      {
+        "command": "python core/hook_runner.py pre-commit"
+      }
+    ]
+  }
+}

@@ -1,0 +1,221 @@
+# Interview Tree: Presentations and Decks
+# For: Executive summaries, readouts, workshops, board presentations, training
+
+id: presentation
+name: Presentation/Deck
+version: "1.0.0"
+
+sections:
+  - id: basics
+    name: Basic Information
+    questions:
+      - id: project_name
+        prompt: |
+          What is this presentation called?
+          (This will be used for file naming)
+        type: text
+        required: true
+
+      - id: client
+        prompt: Who is this presentation for? (client or internal team)
+        type: text
+        required: false
+
+      - id: deadline
+        prompt: |
+          When is this presentation needed?
+          (Format: YYYY-MM-DD or describe)
+        type: text
+        required: false
+
+  - id: purpose
+    name: Purpose
+    questions:
+      - id: purpose
+        prompt: |
+          What is the purpose of this presentation?
+
+          1. Project readout (sharing findings/progress)
+          2. Recommendation (proposing action)
+          3. Workshop (interactive session)
+          4. Board update (executive briefing)
+          5. Training (educational content)
+          6. Other
+        type: choice
+        options: [readout, recommendation, workshop, board_update, training, other]
+        required: true
+
+      - id: purpose_other
+        prompt: Describe the purpose of this presentation.
+        type: text
+        condition: "purpose == 'other'"
+
+      - id: key_message
+        prompt: |
+          What is the single most important message?
+          (The one thing the audience must remember)
+        type: text
+        required: true
+        follow_up:
+          condition: "len(answer) < 20"
+          prompt: Can you be more specific about the core message?
+
+      - id: desired_action
+        prompt: |
+          What do you want the audience to do after seeing this?
+          (e.g., "Approve budget", "Understand the findings", "Provide feedback")
+        type: text
+        required: true
+
+  - id: audience
+    name: Audience
+    questions:
+      - id: audience
+        prompt: |
+          Who is the primary audience?
+
+          1. C-suite executives
+          2. Middle management
+          3. Technical team
+          4. Mixed audience
+          5. External clients
+        type: choice
+        options: [c_suite, managers, technical, mixed, external]
+        required: true
+
+      - id: audience_knowledge
+        prompt: |
+          What do they already know about this topic?
+
+          1. Nothing (need full context)
+          2. Some background (need key updates)
+          3. Deeply familiar (need specifics only)
+        type: choice
+        options: [nothing, some_background, deeply_familiar]
+        required: true
+
+      - id: audience_concerns
+        prompt: |
+          What are their likely concerns or objections?
+          (What questions will they ask?)
+        type: text
+        required: false
+
+  - id: content
+    name: Content
+    questions:
+      - id: key_messages
+        prompt: |
+          What are the 3-5 key messages to convey?
+          List them separated by commas.
+        type: list
+        required: true
+
+      - id: has_data
+        prompt: Do you have data or analysis to include?
+        type: boolean
+        required: true
+
+      - id: data_description
+        prompt: |
+          Describe the data/analysis you want to include.
+          (Or upload files to data/raw/)
+        type: text
+        condition: "has_data == True"
+
+      - id: case_studies
+        prompt: |
+          Are there specific examples or case studies to feature?
+          List them or describe briefly.
+        type: text
+        required: false
+
+      - id: includes_appendix
+        prompt: Should this include an appendix for detailed backup?
+        type: boolean
+        required: true
+
+  - id: format
+    name: Format
+    questions:
+      - id: slide_count
+        prompt: |
+          How many slides?
+          (Enter a number or range like "10-15")
+        type: text
+        required: true
+
+      - id: visual_style
+        prompt: |
+          What presentation style?
+
+          1. Data-heavy (lots of charts and numbers)
+          2. Narrative (story-driven with minimal data)
+          3. Balanced (mix of data and narrative)
+        type: choice
+        options: [data_heavy, narrative, balanced]
+        required: true
+
+      - id: visualization_format
+        prompt: |
+          What format for embedded charts?
+
+          1. PNG (recommended for presentations)
+          2. SVG (scalable, but may not display in older PowerPoint)
+          3. Both
+        type: choice
+        options: [png, svg, both]
+        default: png
+        condition: "has_data == True"
+
+      - id: visualization_size
+        prompt: |
+          What size for charts in the deck?
+
+          1. Full slide (16:9, fills slide content area)
+          2. Half slide (for two-column layouts)
+          3. Custom
+        type: choice
+        options: [full_slide, half_slide, custom]
+        default: full_slide
+        condition: "has_data == True"
+
+      - id: include_insights
+        prompt: |
+          Should each chart slide include key insights?
+
+          1. Yes - headline + 2-3 bullet insights per chart
+          2. No - charts with minimal annotation
+          3. Appendix only - insights in backup slides
+        type: choice
+        options: [yes, no, appendix_only]
+        default: yes
+        condition: "has_data == True"
+
+      - id: delivery_method
+        prompt: |
+          How will this be delivered?
+
+          1. Presented live (speaker-led)
+          2. Read-ahead (sent in advance)
+          3. Both (presented and left behind)
+        type: choice
+        options: [live, read_ahead, both]
+        required: true
+
+      - id: template_requirements
+        prompt: |
+          Any specific template or style requirements?
+          (Will use Kearney KDS template by default)
+        type: text
+        required: false
+
+  - id: notes
+    name: Additional Notes
+    questions:
+      - id: notes
+        prompt: |
+          Any additional context or requirements?
+          (Optional - press Enter to skip)
+        type: text
+        required: false

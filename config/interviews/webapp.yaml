@@ -1,0 +1,217 @@
+# Interview Tree: Web Applications
+# For: Internal tools, client portals, prototypes, calculators, MVPs
+
+id: webapp
+name: Web Application
+version: "1.0.0"
+
+sections:
+  - id: basics
+    name: Basic Information
+    questions:
+      - id: project_name
+        prompt: |
+          What is this application called?
+          (e.g., "Pricing Calculator", "Client Portal")
+        type: text
+        required: true
+
+      - id: client
+        prompt: Who is this application for?
+        type: text
+        required: false
+
+      - id: deadline
+        prompt: When is this application needed?
+        type: text
+        required: false
+
+  - id: purpose
+    name: Purpose
+    questions:
+      - id: webapp_type
+        prompt: |
+          What type of application is this?
+
+          1. Internal tool (for Kearney team)
+          2. Client portal (external-facing)
+          3. Prototype (proof of concept)
+          4. Calculator/configurator (interactive tool)
+          5. Data collection form
+        type: choice
+        options: [internal_tool, client_portal, prototype, calculator, data_collection]
+        required: true
+
+      - id: business_question
+        prompt: |
+          What problem does this application solve?
+          What will users be able to do?
+        type: text
+        required: true
+        follow_up:
+          condition: "len(answer) < 30"
+          prompt: |
+            Can you elaborate on the main use case?
+            What's the primary workflow?
+
+      - id: success_criteria
+        prompt: |
+          What does success look like?
+          How will you know this application is working?
+        type: list
+        required: false
+
+  - id: users
+    name: Users
+    questions:
+      - id: primary_users
+        prompt: |
+          Who are the primary users?
+          Describe the main user personas.
+        type: text
+        required: true
+
+      - id: user_count
+        prompt: |
+          How many users are expected?
+
+          1. Small (< 10 users)
+          2. Medium (10-100 users)
+          3. Large (100+ users)
+        type: choice
+        options: [small, medium, large]
+        required: true
+
+      - id: technical_level
+        prompt: |
+          What is the users' technical level?
+
+          1. Non-technical (need simple, intuitive UI)
+          2. Somewhat technical (comfortable with tools)
+          3. Technical (developers or analysts)
+        type: choice
+        options: [non_technical, somewhat_technical, technical]
+        required: true
+
+  - id: features
+    name: Features
+    questions:
+      - id: features
+        prompt: |
+          What are the key features needed?
+          List the main functionality.
+        type: list
+        required: true
+
+      - id: priority_feature
+        prompt: |
+          What is the single most important feature?
+          (The MVP must have this)
+        type: text
+        required: true
+
+      - id: nice_to_have
+        prompt: |
+          What features are nice-to-have but not essential?
+        type: list
+        required: false
+
+  - id: tech
+    name: Technical Requirements
+    questions:
+      - id: auth_required
+        prompt: Is user authentication required?
+        type: boolean
+        required: true
+
+      - id: auth_method
+        prompt: |
+          What authentication method?
+
+          1. Simple password
+          2. SSO (single sign-on)
+          3. Client-specific auth
+        type: choice
+        options: [password, sso, client_auth]
+        condition: "auth_required == True"
+
+      - id: data_storage
+        prompt: |
+          Does this need to store data?
+
+          1. No data storage (stateless)
+          2. File-based (local files)
+          3. Database required
+        type: choice
+        options: [none, file_based, database]
+        required: true
+
+      - id: integrations
+        prompt: |
+          Are there external integrations needed?
+          (APIs, services, data sources)
+        type: text
+        required: false
+
+  - id: deployment
+    name: Deployment
+    questions:
+      - id: deployment_target
+        prompt: |
+          Where will this be deployed?
+
+          1. Local only (runs on user's machine)
+          2. Internal server (Kearney infrastructure)
+          3. Cloud (AWS, Azure, GCP)
+          4. Client-hosted (delivered to client)
+        type: choice
+        options: [local, internal_server, cloud, client_hosted]
+        required: true
+
+      - id: tech_stack
+        prompt: |
+          Any technology preferences?
+          (e.g., "Python/Flask", "React", "No preference")
+        type: text
+        required: false
+        default: "Python with Streamlit (Kearney standard)"
+
+  - id: design
+    name: Design Requirements
+    questions:
+      - id: include_mockups
+        prompt: Do you need UI mockups or wireframes before development?
+        type: boolean
+        required: true
+
+      - id: mockup_format
+        prompt: |
+          What format for mockups/diagrams?
+
+          1. SVG (scalable, editable)
+          2. PNG (fixed resolution)
+          3. Both formats
+        type: choice
+        options: [svg, png, both]
+        condition: "include_mockups == True"
+
+      - id: branding
+        prompt: |
+          What branding should be applied?
+
+          1. Kearney branding (KDS compliant)
+          2. Client branding (provide style guide)
+          3. Neutral (minimal branding)
+        type: choice
+        options: [kearney, client, neutral]
+        required: true
+
+  - id: notes
+    name: Additional Notes
+    questions:
+      - id: notes
+        prompt: |
+          Any additional requirements, constraints, or context?
+          (Optional - type 'skip' or press Enter to skip)
+        type: text
+        required: false

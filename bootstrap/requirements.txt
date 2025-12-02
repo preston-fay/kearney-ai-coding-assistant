@@ -1,0 +1,24 @@
+# Kearney AI Coding Assistant - Python Dependencies
+# Install via: pip install -r bootstrap/requirements.txt
+#
+# These dependencies power the core/ engine modules.
+# All are standard, well-maintained packages available via pip.
+
+# Data Processing
+pandas>=2.0.0
+openpyxl>=3.1.0
+
+# Visualization
+matplotlib>=3.8.0
+
+# Image Processing
+pillow>=10.0.0
+
+# Document Generation
+python-pptx>=0.6.21
+
+# Configuration
+pyyaml>=6.0
+
+# Testing (optional, for development)
+pytest>=7.0.0

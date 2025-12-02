@@ -1,0 +1,329 @@
+# Interview Tree: Analytics
+# For: Analysis, visualization, insights projects
+
+id: analytics
+name: Analytics Asset
+version: "1.0.0"
+
+sections:
+  - id: basics
+    name: Basic Information
+    questions:
+      - id: project_name
+        prompt: |
+          What is this analytics project called?
+          (e.g., "Customer Segmentation Analysis", "Market Size Assessment")
+        type: text
+        required: true
+
+      - id: client
+        prompt: Who is this analysis for?
+        type: text
+        required: false
+
+      - id: deadline
+        prompt: When is this analysis needed?
+        type: text
+        required: false
+
+  - id: purpose
+    name: Purpose
+    questions:
+      - id: analysis_type
+        prompt: |
+          What type of analysis is this?
+
+          1. Descriptive (what happened?)
+          2. Diagnostic (why did it happen?)
+          3. Exploratory (what patterns exist?)
+          4. Comparative (how do groups differ?)
+          5. Trend analysis (how are things changing?)
+          6. Segmentation (how can we group entities?)
+        type: choice
+        options: [descriptive, diagnostic, exploratory, comparative, trend, segmentation]
+        required: true
+
+      - id: business_question
+        prompt: |
+          What is the core business question?
+          What decision will this analysis inform?
+        type: text
+        required: true
+        follow_up:
+          condition: "len(answer) < 30"
+          prompt: |
+            Can you elaborate on the business context?
+            Who will use these insights and how?
+
+      - id: hypotheses
+        prompt: |
+          What hypotheses are you testing?
+          Or what do you expect to find?
+        type: list
+        required: false
+
+      - id: success_criteria
+        prompt: |
+          What does a successful analysis look like?
+          How will you know the analysis is complete?
+        type: list
+        required: false
+
+  - id: audience
+    name: Audience
+    questions:
+      - id: primary_audience
+        prompt: |
+          Who is the primary audience for this analysis?
+        type: text
+        required: true
+
+      - id: audience_level
+        prompt: |
+          What is the audience's analytical sophistication?
+
+          1. Executive (high-level insights only)
+          2. Manager (insights with some detail)
+          3. Analyst (detailed methodology appreciated)
+          4. Technical (full statistical rigor expected)
+        type: choice
+        options: [executive, manager, analyst, technical]
+        required: true
+
+      - id: presentation_format
+        prompt: |
+          How will insights be delivered?
+
+          1. Slide deck presentation
+          2. Written report/memo
+          3. Interactive dashboard
+          4. Data file with documentation
+          5. Live presentation/workshop
+        type: choice
+        options: [slides, report, dashboard, data_file, live_presentation]
+        required: true
+
+  - id: data
+    name: Data
+    questions:
+      - id: data_sources
+        prompt: |
+          What data sources are available?
+          List the files, databases, or systems.
+        type: list
+        required: true
+
+      - id: data_available
+        prompt: Do you already have access to the data?
+        type: boolean
+        required: true
+
+      - id: data_access_plan
+        prompt: |
+          How will you obtain access to the data?
+        type: text
+        condition: "data_available == False"
+
+      - id: data_quality_concerns
+        prompt: |
+          Any known data quality issues?
+          (missing values, inconsistencies, etc.)
+        type: text
+        required: false
+
+      - id: time_period
+        prompt: |
+          What time period should the analysis cover?
+          (e.g., "Last 12 months", "2020-2024")
+        type: text
+        required: true
+
+      - id: granularity
+        prompt: |
+          What level of granularity is needed?
+          (e.g., daily, weekly, by customer, by product)
+        type: text
+        required: true
+
+  - id: metrics
+    name: Metrics & KPIs
+    questions:
+      - id: metrics
+        prompt: |
+          What are the key metrics to analyze?
+          List the main KPIs or measures.
+        type: list
+        required: true
+
+      - id: metric_definitions
+        prompt: |
+          Are metric definitions standardized?
+          Any specific calculation rules?
+        type: text
+        required: false
+
+      - id: benchmarks
+        prompt: |
+          Are there benchmarks or targets to compare against?
+          (Industry standards, historical performance, etc.)
+        type: text
+        required: false
+
+      - id: comparisons
+        prompt: |
+          What comparisons are needed?
+          (e.g., YoY, vs budget, vs competitors, across regions)
+        type: list
+        required: false
+
+  - id: visualizations
+    name: Visualizations
+    questions:
+      - id: has_visualizations
+        prompt: |
+          Will this analysis include charts or visualizations?
+        type: boolean
+        required: true
+
+      - id: visualizations
+        prompt: |
+          What types of visualizations are needed?
+          (charts, maps, tables, etc.)
+        type: list
+        required: false
+        condition: "has_visualizations == True"
+
+      - id: visualization_format
+        prompt: |
+          What format for charts and visualizations?
+
+          1. SVG (recommended - scalable, editable, small file size)
+          2. PNG (universal compatibility, good for presentations)
+          3. Both SVG and PNG
+        type: choice
+        options: [svg, png, both]
+        default: svg
+        condition: "has_visualizations == True"
+
+      - id: visualization_size
+        prompt: |
+          What size/aspect ratio for visualizations?
+
+          1. Presentation (16:9, 1920x1080)
+          2. Document (4:3, 1200x900)
+          3. Square (1:1, 1200x1200)
+          4. Wide banner (3:1, 1800x600)
+          5. Custom (specify dimensions)
+        type: choice
+        options: [presentation, document, square, banner, custom]
+        default: presentation
+        condition: "has_visualizations == True"
+
+      - id: visualization_custom_size
+        prompt: |
+          Enter custom dimensions (width x height in pixels):
+          Example: 1400x800
+        type: text
+        condition: "visualization_size == 'custom'"
+
+      - id: chart_preferences
+        prompt: |
+          Any specific chart preferences?
+          (e.g., "Prefer waterfall for variance", "No pie charts")
+        type: text
+        required: false
+        condition: "has_visualizations == True"
+
+      - id: interactive
+        prompt: |
+          Should visualizations be interactive?
+          (filters, drill-downs, tooltips)
+        type: boolean
+        required: true
+        condition: "has_visualizations == True"
+
+  - id: insights
+    name: Insights & Narrative
+    questions:
+      - id: include_insights
+        prompt: |
+          Should charts include key insights and narrative?
+
+          1. Yes - include written insights with each visualization
+          2. No - charts only, no narrative
+          3. Summary only - one insight summary for all charts
+        type: choice
+        options: [yes, no, summary_only]
+        default: yes
+        condition: "has_visualizations == True"
+
+      - id: insight_depth
+        prompt: |
+          How detailed should the insights be?
+
+          1. Headlines only (1-2 sentences per chart)
+          2. Brief analysis (1 paragraph per chart)
+          3. Detailed analysis (multiple paragraphs, implications, recommendations)
+        type: choice
+        options: [headlines, brief, detailed]
+        default: brief
+        condition: "include_insights == 'yes'"
+
+      - id: insight_audience
+        prompt: |
+          Who is the audience for these insights?
+
+          1. Executive (high-level, business impact)
+          2. Manager (actionable, operational focus)
+          3. Technical (detailed, methodology notes)
+        type: choice
+        options: [executive, manager, technical]
+        default: executive
+        condition: "include_insights != 'no'"
+
+  - id: methodology
+    name: Methodology
+    questions:
+      - id: statistical_methods
+        prompt: |
+          What statistical methods might be used?
+          (e.g., regression, correlation, significance testing)
+        type: list
+        required: false
+
+      - id: tools_preference
+        prompt: |
+          Any tool preferences?
+          (e.g., "Excel only", "Python preferred", "Must use Tableau")
+        type: text
+        required: false
+        default: "Python (Kearney standard)"
+
+      - id: reproducibility
+        prompt: |
+          How important is reproducibility?
+
+          1. One-time analysis (ad-hoc)
+          2. May need to update occasionally
+          3. Will be repeated regularly
+          4. Must be fully automated/reproducible
+        type: choice
+        options: [one_time, occasional, regular, automated]
+        required: true
+
+  - id: notes
+    name: Additional Notes
+    questions:
+      - id: sensitive_fields
+        prompt: |
+          Are there sensitive data fields to be careful with?
+          (PII, confidential metrics, etc.)
+        type: list
+        required: false
+
+      - id: notes
+        prompt: |
+          Any additional context, constraints, or requirements?
+          (Optional - press Enter to skip)
+        type: text
+        required: false

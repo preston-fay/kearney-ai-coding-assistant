@@ -1,0 +1,45 @@
+# Presentation Project Template Configuration
+
+template: presentation
+version: "1.0"
+description: Slide deck creation with KDS branding
+
+intake_template: presentation.yaml
+
+default_phases:
+  - name: "Phase 1: Content Planning"
+    tasks:
+      - Define presentation structure
+      - Outline key messages
+      - Identify visual needs
+
+  - name: "Phase 2: Content Creation"
+    tasks:
+      - Draft slide content
+      - Create supporting charts (if needed)
+      - Gather images and assets
+
+  - name: "Phase 3: Slide Building"
+    tasks:
+      - Build title slide
+      - Build content slides
+      - Build chart slides
+      - Build closing slide
+
+  - name: "Phase 4: Review & Export"
+    tasks:
+      - Run brand compliance check
+      - Export final presentation
+
+tools_used:
+  - core.slide_engine
+  - core.chart_engine
+  - core.brand_guard
+
+output_directories:
+  - outputs/charts/
+  - exports/
+
+typical_deliverables:
+  - PowerPoint presentation (.pptx)
+  - Supporting charts (if generated)

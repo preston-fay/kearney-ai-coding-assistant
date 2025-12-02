@@ -1,0 +1,313 @@
+# Interview Tree: Statistical/ML Modeling
+# For: Classification, regression, clustering, time series, ranking, anomaly detection
+
+id: modeling
+name: Statistical/ML Modeling
+version: "1.0.0"
+
+sections:
+  - id: basics
+    name: Basic Information
+    questions:
+      - id: project_name
+        prompt: |
+          What is this project called?
+          (This will be used for folder naming and identification)
+        type: text
+        required: true
+
+      - id: client
+        prompt: Who is the client or internal stakeholder?
+        type: text
+        required: false
+
+      - id: deadline
+        prompt: |
+          What is the deadline or target completion date?
+          (Format: YYYY-MM-DD or describe, e.g., "end of Q4")
+        type: text
+        required: false
+
+  - id: problem_definition
+    name: Problem Definition
+    questions:
+      - id: business_question
+        prompt: |
+          What is the business question you're trying to answer?
+          Be specific about the decision this model will inform.
+        type: text
+        required: true
+        follow_up:
+          condition: "len(answer) < 50"
+          prompt: |
+            Can you elaborate? What decision will stakeholders make
+            based on this model's predictions?
+
+      - id: problem_type
+        prompt: |
+          What type of problem is this?
+
+          1. Classification (predict a category)
+          2. Regression (predict a number)
+          3. Clustering (find natural groups)
+          4. Time Series (forecast future values)
+          5. Ranking (order items by relevance)
+          6. Anomaly Detection (find outliers)
+          7. Not sure yet
+        type: choice
+        options: [classification, regression, clustering, time_series, ranking, anomaly, unsure]
+        required: true
+
+      - id: target_variable
+        prompt: What is the target variable you're trying to predict?
+        type: text
+        required: true
+        condition: "problem_type not in ['clustering', 'unsure']"
+
+      - id: target_definition
+        prompt: |
+          How is the target variable defined?
+          (e.g., "Customer canceled within 90 days of observation date")
+        type: text
+        required: false
+        condition: "problem_type not in ['clustering', 'unsure']"
+
+      - id: class_balance
+        prompt: |
+          Is your target variable balanced or imbalanced?
+          (e.g., 50/50 split vs 95/5 split)
+
+          1. Balanced (roughly equal classes)
+          2. Slightly imbalanced (20-40% minority)
+          3. Highly imbalanced (<20% minority)
+          4. Unknown
+        type: choice
+        options: [balanced, slightly_imbalanced, highly_imbalanced, unknown]
+        condition: "problem_type == 'classification'"
+
+      - id: forecast_horizon
+        prompt: |
+          What is the forecast horizon?
+          (e.g., "7 days", "next quarter", "12 months")
+        type: text
+        condition: "problem_type == 'time_series'"
+
+  - id: data
+    name: Data Sources
+    questions:
+      - id: data_sources
+        prompt: |
+          What data sources do you have?
+          Describe or list the files/tables available.
+        type: text
+        required: true
+
+      - id: data_volume
+        prompt: |
+          How much data do you have?
+          (Approximate rows and time range covered)
+        type: text
+        required: false
+
+      - id: quality_notes
+        prompt: |
+          Are there any known data quality issues?
+          (Missing values, duplicates, date range gaps, etc.)
+        type: text
+        required: false
+
+      - id: sensitive_fields
+        prompt: |
+          Are there sensitive or protected fields to exclude?
+          (PII, protected characteristics, etc.)
+          List them separated by commas.
+        type: list
+        required: false
+
+  - id: features
+    name: Features
+    questions:
+      - id: features_included
+        prompt: |
+          What features do you expect to be predictive?
+          List the key variables you want to include.
+        type: list
+        required: false
+
+      - id: features_to_engineer
+        prompt: |
+          Are there features you want to engineer?
+          (e.g., "usage trend", "days since last activity")
+        type: list
+        required: false
+
+      - id: features_excluded
+        prompt: |
+          Are there features that must be excluded?
+          (Identifiers, leakage variables, etc.)
+        type: list
+        required: false
+
+  - id: validation
+    name: Validation Strategy
+    questions:
+      - id: validation_strategy
+        prompt: |
+          How should the model be validated?
+
+          1. Holdout (simple train/test split)
+          2. Cross-validation (k-fold)
+          3. Time-based split (train on past, test on future)
+          4. Not sure
+        type: choice
+        options: [holdout, cross_validation, time_based, unsure]
+        required: true
+
+      - id: validation_metrics
+        prompt: |
+          What metrics matter most?
+          Select all that apply (comma-separated numbers):
+
+          1. AUC-ROC
+          2. Precision
+          3. Recall
+          4. F1 Score
+          5. Accuracy
+          6. RMSE
+          7. MAE
+          8. R-squared
+        type: multi
+        options: [auc_roc, precision, recall, f1_score, accuracy, rmse, mae, r_squared]
+        required: true
+
+      - id: baseline
+        prompt: |
+          Is there a baseline to beat?
+          (e.g., "Current model has 0.68 AUC")
+        type: text
+        required: false
+
+  - id: interpretability
+    name: Interpretability
+    questions:
+      - id: interpretability_required
+        prompt: Is model interpretability required?
+        type: boolean
+        required: true
+
+      - id: interpretability_audience
+        prompt: |
+          Who needs to understand the model?
+
+          1. Business users (non-technical)
+          2. Technical stakeholders
+          3. Regulators/auditors
+          4. All of the above
+        type: choice
+        options: [business_users, technical, regulators, all]
+        condition: "interpretability_required == True"
+
+      - id: compliance_requirements
+        prompt: |
+          Are there specific compliance requirements?
+          (e.g., "Must explain individual predictions")
+        type: text
+        condition: "interpretability_audience in ['regulators', 'all']"
+
+  - id: deliverables
+    name: Deliverables
+    questions:
+      - id: deliverables
+        prompt: |
+          What outputs do you need?
+          Select all that apply (e.g., "1, 3, 5" or "1 3 5"):
+
+          1. Trained model artifact
+          2. Validation report
+          3. Executive presentation
+          4. Scoring script
+          5. Feature importance analysis
+          6. Documentation
+        type: multi
+        options: [model_artifact, validation_report, presentation, scoring_script, feature_importance, documentation]
+        required: true
+
+      - id: visualization_format
+        prompt: |
+          What format for charts and visualizations?
+
+          1. SVG (recommended - scalable, editable, small file size)
+          2. PNG (universal compatibility, good for presentations)
+          3. Both SVG and PNG
+        type: choice
+        options: [svg, png, both]
+        default: png
+
+      - id: visualization_size
+        prompt: |
+          What size/aspect ratio for visualizations?
+
+          1. Presentation (16:9, 1920x1080)
+          2. Document (4:3, 1200x900)
+          3. Square (1:1, 1200x1200)
+          4. Custom (specify dimensions)
+        type: choice
+        options: [presentation, document, square, custom]
+        default: presentation
+
+      - id: visualization_custom_size
+        prompt: |
+          Enter custom dimensions (width x height in pixels):
+          Example: 1400x800
+        type: text
+        condition: "visualization_size == 'custom'"
+
+      - id: presentation_slides
+        prompt: How many slides for the presentation?
+        type: number
+        condition: "'presentation' in deliverables"
+
+      - id: presentation_audience
+        prompt: |
+          Who is the presentation audience?
+
+          1. C-suite executives
+          2. Technical team
+          3. Mixed audience
+        type: choice
+        options: [c_suite, technical, mixed]
+        condition: "'presentation' in deliverables"
+
+      - id: include_insights
+        prompt: |
+          Should visualizations include key insights and narrative?
+
+          1. Yes - include written insights with each visualization
+          2. No - charts only, no narrative
+          3. Summary only - one insight summary for all charts
+        type: choice
+        options: [yes, no, summary_only]
+        default: yes
+        condition: "'presentation' in deliverables or 'feature_importance' in deliverables"
+
+      - id: insight_depth
+        prompt: |
+          How detailed should the insights be?
+
+          1. Headlines only (1-2 sentences per chart)
+          2. Brief analysis (1 paragraph per chart)
+          3. Detailed analysis (multiple paragraphs, implications)
+        type: choice
+        options: [headlines, brief, detailed]
+        default: brief
+        condition: "include_insights == 'yes'"
+
+  - id: notes
+    name: Additional Notes
+    questions:
+      - id: notes
+        prompt: |
+          Any additional context, constraints, or notes?
+          (Optional - press Enter to skip)
+        type: text
+        required: false
