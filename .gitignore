@@ -109,3 +109,13 @@ logs/
 # ============================================================
 
 cleanup_audit.py
+
+# ============================================================
+# CLIENT DESIGN SYSTEMS (PRIVACY)
+# ============================================================
+
+# Ignore all client design systems except Kearney (default)
+config/brands/*
+!config/brands/kearney/
+!config/brands/README.md
+!config/brands/.gitignore

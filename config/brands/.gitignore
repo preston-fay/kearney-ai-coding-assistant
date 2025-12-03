@@ -1,0 +1,7 @@
+# Ignore all client design systems
+*
+
+# Keep Kearney (default) and documentation
+!kearney/
+!README.md
+!.gitignore
