@@ -13,6 +13,7 @@ Complete reference for all slash commands in the Kearney AI Coding Assistant.
 | `/status` | Show current state | Project initialized |
 | `/review` | Brand compliance check | Outputs exist |
 | `/export` | Generate deliverables | Review passed |
+| `/webapp` | Generate web dashboard (HTML/Streamlit/React) | Spec with dashboard type |
 | `/help` | Show help | None |
 
 ---

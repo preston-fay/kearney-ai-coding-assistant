@@ -50,6 +50,7 @@
   OTHER USEFUL COMMANDS
   ---------------------
   /status   Where am I? What's next?
+  /webapp   Generate web dashboard (HTML/Streamlit/React)
   /edit     Change requirements
   /spec     View current spec
   /history  View spec versions
@@ -129,6 +130,7 @@
 | `/status` | Show current project state |
 | `/review` | Run brand compliance check |
 | `/export` | Generate final deliverables |
+| `/webapp` | Generate web dashboard (HTML/Streamlit/React) |
 
 ### State Management
 

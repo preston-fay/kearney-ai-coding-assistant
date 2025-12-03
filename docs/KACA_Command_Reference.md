@@ -15,6 +15,7 @@
 │  /status        Show current progress                           │
 │  /review        Check brand compliance                          │
 │  /export        Generate final deliverables                     │
+│  /webapp        Generate web dashboard (HTML/Streamlit/React)   │
 │                                                                         │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                         │
@@ -184,6 +185,49 @@ Recent:
 - Logs to `project_state/logs/exports/`
 
 **Important**: Human review required before sending to client!
+
+---
+
+### /webapp
+
+**Purpose**: Generate an interactive web dashboard from project specification
+
+**Usage**:
+```
+/webapp                       # Generate dashboard based on spec
+```
+
+**When to use**:
+- Project type is `dashboard` or `webapp`
+- You want an interactive visualization
+- Need to share data insights with clients
+
+**Output Tiers** (auto-selected based on audience/data size):
+
+| Tier | Output | Best For |
+|------|--------|----------|
+| Static HTML | Single `.html` file | Client executives, email sharing |
+| Streamlit | Python app directory | Internal analysts, live data |
+| React | Vite project scaffold | Engineering handoff, production |
+
+**Output locations**:
+- Static HTML: `exports/{name}_dashboard.html`
+- Streamlit: `exports/{name}_app/`
+- React: `exports/{name}_react/`
+
+**Example output**:
+```
+Dashboard generated successfully
+
+  Output: exports/sales_dashboard.html
+  Size: 1.2 MB
+  Brand check: PASSED
+
+Next steps:
+  - Open in browser to preview
+  - Run /review for detailed compliance check
+  - Run /export to package for delivery
+```
 
 ---
 

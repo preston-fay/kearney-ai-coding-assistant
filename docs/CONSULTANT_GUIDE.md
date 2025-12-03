@@ -164,7 +164,7 @@ Best for: Internal tools, dashboards, prototypes
    ```
    /init
    ```
-   Select "webapp" template
+   Select "webapp" or "dashboard" template
 
 2. **Intake**
    ```
@@ -172,8 +172,8 @@ Best for: Internal tools, dashboards, prototypes
    ```
    Provide:
    - Application purpose
-   - Target users
-   - Key features
+   - Target users/audience
+   - Key features and KPIs
    - Data requirements
 
 3. **Plan**
@@ -185,24 +185,34 @@ Best for: Internal tools, dashboards, prototypes
    - Component list
    - Styling approach
 
-4. **Execute**
+4. **Generate Dashboard**
    ```
-   /execute
+   /webapp
    ```
-   Claude will:
-   - Create project structure
-   - Generate HTML/CSS
-   - Apply KDS styles
-   - Add basic interactivity
+   Claude will auto-select the best tier based on your audience:
+
+   | Audience | Output Tier |
+   |----------|-------------|
+   | Client executives | Static HTML (single file, email-friendly) |
+   | Internal analysts | Streamlit (Python app, live data) |
+   | Engineering team | React (Vite scaffold for production) |
+
+   Output includes:
+   - KPI metric cards
+   - Interactive Plotly charts
+   - Filterable data tables
+   - Responsive layout
+   - Brand-compliant styling
 
 5. **Review**
    ```
    /review
    ```
    Validates:
-   - CSS color values
+   - CSS color values (no green)
+   - Kearney Purple (#7823DC) usage
    - Font declarations
-   - Accessibility basics
+   - No gridlines on charts
 
 ## Best Practices
 

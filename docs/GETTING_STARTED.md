@@ -127,6 +127,7 @@ Then export your deliverables:
 | `/status` | Check progress |
 | `/review` | Brand compliance check |
 | `/export` | Generate deliverables |
+| `/webapp` | Generate web dashboard (HTML/Streamlit/React) |
 | `/help` | Show help |
 
 ### Session Management Commands
