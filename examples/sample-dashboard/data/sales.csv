@@ -1,0 +1,17 @@
+region,product,month,revenue,units
+North,Widget A,2024-01,125000,450
+North,Widget A,2024-02,132000,475
+North,Widget B,2024-01,89000,320
+North,Widget B,2024-02,94000,340
+South,Widget A,2024-01,98000,380
+South,Widget A,2024-02,105000,405
+South,Widget B,2024-01,67000,245
+South,Widget B,2024-02,72000,265
+East,Widget A,2024-01,145000,520
+East,Widget A,2024-02,152000,545
+East,Widget B,2024-01,103000,375
+East,Widget B,2024-02,108000,390
+West,Widget A,2024-01,112000,425
+West,Widget A,2024-02,118000,445
+West,Widget B,2024-01,78000,290
+West,Widget B,2024-02,83000,305

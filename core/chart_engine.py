@@ -138,6 +138,7 @@ class KDSChart:
         default_format: str = "svg",
         smart_numbers: bool = True,
         intelligent_colors: bool = True,
+        theme: Optional["KDSTheme"] = None,
     ):
         """
         Initialize KDSChart with brand defaults.
@@ -151,6 +152,8 @@ class KDSChart:
             default_format: Default output format ('svg' or 'png'). SVG recommended.
             smart_numbers: If True, format large numbers with K/M/B abbreviations.
             intelligent_colors: If True, use context-aware coloring based on chart type.
+            theme: Optional KDSTheme instance for custom theming. If provided,
+                   applies theme's matplotlib rcParams after default setup.
         """
         # Handle size - priority: figsize > size_preset > default
         if figsize is not None:
@@ -168,9 +171,14 @@ class KDSChart:
         self.default_format = default_format.lower()
         self.smart_numbers = smart_numbers
         self.intelligent_colors = intelligent_colors
+        self.theme = theme
         self.fig: Optional[Figure] = None
         self.ax: Optional[Axes] = None
         self._setup_style()
+
+        # Apply custom theme if provided (overrides defaults)
+        if self.theme is not None:
+            self._apply_theme()
 
     def _setup_style(self) -> None:
         """Configure matplotlib style for KDS compliance."""
@@ -203,6 +211,17 @@ class KDSChart:
             "xtick.color": KDSColors.TEXT_LIGHT if self.dark_mode else KDSColors.TEXT_DARK,
             "ytick.color": KDSColors.TEXT_LIGHT if self.dark_mode else KDSColors.TEXT_DARK,
         })
+
+    def _apply_theme(self) -> None:
+        """
+        Apply KDSTheme to matplotlib rcParams.
+
+        Only called if a theme was provided to __init__.
+        This allows custom themes to override the default KDS styling.
+        """
+        if self.theme is not None:
+            rcparams = self.theme.to_matplotlib_rcparams()
+            plt.rcParams.update(rcparams)
 
     def _create_figure(self) -> Tuple[Figure, Axes]:
         """Create a new figure with KDS styling."""

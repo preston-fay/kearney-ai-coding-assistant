@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regional Sales Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+    
+:root {
+  --kds-primary: #7823DC;
+  --kds-primary-light: #9B4DCA;
+  --kds-primary-dark: #5C1BA8;
+  --kds-primary-pale: #D4A5FF;
+  --kds-secondary: #B266FF;
+  --kds-accent: #CE93D8;
+  --kds-positive: #D4A5FF;
+  --kds-negative: #FF6F61;
+  --kds-warning: #FFB74D;
+  --kds-info: #64B5F6;
+  --kds-background-dark: #1E1E1E;
+  --kds-background-light: #FFFFFF;
+  --kds-surface-dark: #2D2D2D;
+  --kds-surface-light: #F5F5F5;
+  --kds-text-light: #FFFFFF;
+  --kds-text-dark: #333333;
+  --kds-text-muted: #666666;
+  --kds-gray-100: #F5F5F5;
+  --kds-gray-200: #E0E0E0;
+  --kds-gray-300: #CCCCCC;
+  --kds-gray-400: #999999;
+  --kds-gray-500: #666666;
+  --kds-gray-600: #333333;
+  --kds-chart-0: #7823DC;
+  --kds-chart-1: #9B4DCA;
+  --kds-chart-2: #5C1BA8;
+  --kds-chart-3: #B266FF;
+  --kds-chart-4: #4A148C;
+  --kds-chart-5: #CE93D8;
+  --kds-chart-6: #7B1FA2;
+  --kds-chart-7: #666666;
+  --kds-chart-8: #999999;
+  --kds-chart-9: #333333;
+  --kds-font-family: Inter, Arial, sans-serif;
+  --kds-font-weight-normal: 400;
+  --kds-font-weight-medium: 500;
+  --kds-font-weight-bold: 600;
+  --kds-font-size-base: 14px;
+  --kds-font-size-small: 12px;
+  --kds-font-size-large: 18px;
+  --kds-font-size-xl: 24px;
+  --kds-font-size-xxl: 32px;
+  --kds-spacing-xs: 4px;
+  --kds-spacing-sm: 8px;
+  --kds-spacing-md: 16px;
+  --kds-spacing-lg: 24px;
+  --kds-spacing-xl: 32px;
+  --kds-radius-sm: 4px;
+  --kds-radius-md: 8px;
+  --kds-radius-lg: 12px;
+  --kds-shadow-sm: 0 1px 2px rgba(0,0,0,0.1);
+  --kds-shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+  --kds-shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+  --kds-breakpoint-mobile: 480px;
+  --kds-breakpoint-tablet: 768px;
+  --kds-breakpoint-desktop: 1200px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--kds-font-family);
+    background-color: var(--kds-background-dark);
+    color: var(--kds-text-light);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: var(--kds-spacing-lg);
+}
+
+header {
+    margin-bottom: var(--kds-spacing-xl);
+}
+
+h1 {
+    font-size: var(--kds-font-size-xxl);
+    font-weight: var(--kds-font-weight-bold);
+    color: var(--kds-text-light);
+    margin-bottom: var(--kds-spacing-sm);
+}
+
+.subtitle {
+    color: var(--kds-text-muted);
+    font-size: var(--kds-font-size-base);
+}
+
+/* Metrics Grid */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--kds-spacing-md);
+    margin-bottom: var(--kds-spacing-xl);
+}
+
+.metric-card {
+    background: var(--kds-surface-dark);
+    border-radius: var(--kds-radius-md);
+    padding: var(--kds-spacing-lg);
+    border-left: 4px solid var(--kds-primary);
+}
+
+.metric-label {
+    font-size: var(--kds-font-size-small);
+    color: var(--kds-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--kds-spacing-xs);
+}
+
+.metric-value {
+    font-size: var(--kds-font-size-xxl);
+    font-weight: var(--kds-font-weight-bold);
+    color: var(--kds-text-light);
+}
+
+.metric-delta {
+    font-size: var(--kds-font-size-small);
+    margin-top: var(--kds-spacing-xs);
+}
+
+.metric-delta.positive {
+    color: var(--kds-positive);
+}
+
+.metric-delta.negative {
+    color: var(--kds-negative);
+}
+
+/* Filters */
+.filters-section {
+    display: flex;
+    gap: var(--kds-spacing-md);
+    flex-wrap: wrap;
+    margin-bottom: var(--kds-spacing-xl);
+    padding: var(--kds-spacing-md);
+    background: var(--kds-surface-dark);
+    border-radius: var(--kds-radius-md);
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--kds-spacing-xs);
+}
+
+.filter-label {
+    font-size: var(--kds-font-size-small);
+    color: var(--kds-text-muted);
+}
+
+.filter-select {
+    background: var(--kds-background-dark);
+    color: var(--kds-text-light);
+    border: 1px solid var(--kds-gray-500);
+    border-radius: var(--kds-radius-sm);
+    padding: var(--kds-spacing-sm) var(--kds-spacing-md);
+    font-size: var(--kds-font-size-base);
+    min-width: 150px;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--kds-primary);
+}
+
+/* Charts Grid */
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--kds-spacing-lg);
+    margin-bottom: var(--kds-spacing-xl);
+}
+
+.chart-card {
+    background: var(--kds-surface-dark);
+    border-radius: var(--kds-radius-md);
+    padding: var(--kds-spacing-lg);
+}
+
+.chart-title {
+    font-size: var(--kds-font-size-large);
+    font-weight: var(--kds-font-weight-medium);
+    margin-bottom: var(--kds-spacing-md);
+    color: var(--kds-text-light);
+}
+
+.chart-container {
+    height: 300px;
+}
+
+/* Tables */
+.table-section {
+    background: var(--kds-surface-dark);
+    border-radius: var(--kds-radius-md);
+    padding: var(--kds-spacing-lg);
+    margin-bottom: var(--kds-spacing-xl);
+    overflow-x: auto;
+}
+
+.table-title {
+    font-size: var(--kds-font-size-large);
+    font-weight: var(--kds-font-weight-medium);
+    margin-bottom: var(--kds-spacing-md);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    text-align: left;
+    padding: var(--kds-spacing-sm) var(--kds-spacing-md);
+    border-bottom: 1px solid var(--kds-gray-600);
+}
+
+th {
+    font-weight: var(--kds-font-weight-medium);
+    color: var(--kds-text-muted);
+    font-size: var(--kds-font-size-small);
+    text-transform: uppercase;
+}
+
+tr:hover {
+    background: rgba(120, 35, 220, 0.1);
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: var(--kds-spacing-xl) 0;
+    color: var(--kds-text-muted);
+    font-size: var(--kds-font-size-small);
+    border-top: 1px solid var(--kds-gray-600);
+    margin-top: var(--kds-spacing-xl);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .filters-section {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .container {
+        padding: var(--kds-spacing-md);
+    }
+}
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Regional Sales Dashboard</h1>
+            <p class="subtitle">Generated 2025-12-03 13:46</p>
+        </header>
+
+        <div class="metrics-grid">
+            
+            <div class="metric-card">
+                <div class="metric-label">Total Revenue</div>
+                <div class="metric-value">$1,681,000</div>
+                
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-label">Units Sold</div>
+                <div class="metric-value">6,175</div>
+                
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-label">Avg Deal Size</div>
+                <div class="metric-value">$105,062.50</div>
+                
+            </div>
+            
+        </div>
+
+        <div class="filters-section">
+                    <div class="filter-group">
+                        <label class="filter-label">region</label>
+                        <select class="filter-select" id="filter_0" data-source="sales" data-column="region">
+                            <option value="">All</option><option value="East">East</option><option value="North">North</option><option value="South">South</option><option value="West">West</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">product</label>
+                        <select class="filter-select" id="filter_1" multiple data-source="sales" data-column="product">
+                            <option value="">All</option><option value="Widget A">Widget A</option><option value="Widget B">Widget B</option>
+                        </select>
+                    </div>
+                    </div>
+
+        <div class="charts-grid">
+            
+            <div class="chart-card">
+                <div class="chart-title">Revenue by Region</div>
+                <div class="chart-container" id="chart_0"></div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-title">Revenue Trend</div>
+                <div class="chart-container" id="chart_1"></div>
+            </div>
+            
+        </div>
+
+        
+            <div class="table-section" data-source="sales">
+                <div class="table-title">Sales Details</div>
+                <table>
+                    <thead><tr><th>region</th><th>product</th><th>month</th><th>revenue</th><th>units</th></tr></thead>
+                    <tbody><tr><td>North</td><td>Widget A</td><td>2024-01</td><td>125000</td><td>450</td></tr><tr><td>North</td><td>Widget A</td><td>2024-02</td><td>132000</td><td>475</td></tr><tr><td>North</td><td>Widget B</td><td>2024-01</td><td>89000</td><td>320</td></tr><tr><td>North</td><td>Widget B</td><td>2024-02</td><td>94000</td><td>340</td></tr><tr><td>South</td><td>Widget A</td><td>2024-01</td><td>98000</td><td>380</td></tr><tr><td>South</td><td>Widget A</td><td>2024-02</td><td>105000</td><td>405</td></tr><tr><td>South</td><td>Widget B</td><td>2024-01</td><td>67000</td><td>245</td></tr><tr><td>South</td><td>Widget B</td><td>2024-02</td><td>72000</td><td>265</td></tr><tr><td>East</td><td>Widget A</td><td>2024-01</td><td>145000</td><td>520</td></tr><tr><td>East</td><td>Widget A</td><td>2024-02</td><td>152000</td><td>545</td></tr></tbody>
+                </table>
+            </div>
+            
+
+        <footer>
+            Generated by KACA | Kearney Digital & Analytics
+        </footer>
+    </div>
+
+    <script type="application/json" id="kds-data">
+    {"sales": [{"region": "North", "product": "Widget A", "month": "2024-01", "revenue": 125000, "units": 450}, {"region": "North", "product": "Widget A", "month": "2024-02", "revenue": 132000, "units": 475}, {"region": "North", "product": "Widget B", "month": "2024-01", "revenue": 89000, "units": 320}, {"region": "North", "product": "Widget B", "month": "2024-02", "revenue": 94000, "units": 340}, {"region": "South", "product": "Widget A", "month": "2024-01", "revenue": 98000, "units": 380}, {"region": "South", "product": "Widget A", "month": "2024-02", "revenue": 105000, "units": 405}, {"region": "South", "product": "Widget B", "month": "2024-01", "revenue": 67000, "units": 245}, {"region": "South", "product": "Widget B", "month": "2024-02", "revenue": 72000, "units": 265}, {"region": "East", "product": "Widget A", "month": "2024-01", "revenue": 145000, "units": 520}, {"region": "East", "product": "Widget A", "month": "2024-02", "revenue": 152000, "units": 545}, {"region": "East", "product": "Widget B", "month": "2024-01", "revenue": 103000, "units": 375}, {"region": "East", "product": "Widget B", "month": "2024-02", "revenue": 108000, "units": 390}, {"region": "West", "product": "Widget A", "month": "2024-01", "revenue": 112000, "units": 425}, {"region": "West", "product": "Widget A", "month": "2024-02", "revenue": 118000, "units": 445}, {"region": "West", "product": "Widget B", "month": "2024-01", "revenue": 78000, "units": 290}, {"region": "West", "product": "Widget B", "month": "2024-02", "revenue": 83000, "units": 305}]}
+    </script>
+
+    <script>
+    // Load embedded data
+    window.kdsData = JSON.parse(document.getElementById('kds-data').textContent);
+
+    // Plotly template
+    const kdsTemplate = {"layout": {"colorway": ["#7823DC", "#9B4DCA", "#5C1BA8", "#B266FF", "#4A148C", "#CE93D8", "#7B1FA2", "#666666", "#999999", "#333333"], "font": {"family": "Inter, Arial, sans-serif", "color": "#FFFFFF", "size": 14}, "title": {"font": {"size": 18, "color": "#FFFFFF"}, "x": 0.5, "xanchor": "center"}, "paper_bgcolor": "#1E1E1E", "plot_bgcolor": "#1E1E1E", "xaxis": {"gridcolor": "#666666", "gridwidth": 0, "showgrid": false, "linecolor": "#999999", "tickcolor": "#FFFFFF", "tickfont": {"color": "#FFFFFF"}, "title": {"font": {"color": "#FFFFFF"}}}, "yaxis": {"gridcolor": "#666666", "gridwidth": 0, "showgrid": false, "linecolor": "#999999", "tickcolor": "#FFFFFF", "tickfont": {"color": "#FFFFFF"}, "title": {"font": {"color": "#FFFFFF"}}}, "legend": {"bgcolor": "rgba(0,0,0,0)", "font": {"color": "#FFFFFF"}, "orientation": "h", "yanchor": "bottom", "y": -0.2, "xanchor": "center", "x": 0.5}, "margin": {"l": 60, "r": 30, "t": 60, "b": 60}}, "data": {"bar": [{"marker": {"line": {"width": 0}}}], "pie": [{"marker": {"line": {"color": "#1E1E1E", "width": 2}}}]}};
+
+    // Initialize charts
+    
+                (function() {
+                    const data = window.kdsData['sales'];
+                    const aggregated = {};
+                    data.forEach(row => {
+                        const key = row['region'];
+                        if (!aggregated[key]) aggregated[key] = 0;
+                        aggregated[key] += row['revenue'] || 0;
+                    });
+                    const x = Object.keys(aggregated);
+                    const y = Object.values(aggregated);
+
+                    Plotly.newPlot('chart_0', [{
+                        type: 'bar',
+                        x: x,
+                        y: y,
+                        marker: { color: '#7823DC' }
+                    }], {
+                        ...kdsTemplate.layout,
+                        margin: { l: 50, r: 30, t: 30, b: 50 }
+                    }, { responsive: true });
+                })();
+                
+                (function() {
+                    const data = window.kdsData['sales'];
+                    const aggregated = {};
+                    data.forEach(row => {
+                        const key = row['month'];
+                        if (!aggregated[key]) aggregated[key] = 0;
+                        aggregated[key] += row['revenue'] || 0;
+                    });
+                    const x = Object.keys(aggregated);
+                    const y = Object.values(aggregated);
+
+                    Plotly.newPlot('chart_1', [{
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        x: x,
+                        y: y,
+                        line: { color: '#7823DC' },
+                        marker: { color: '#7823DC' }
+                    }], {
+                        ...kdsTemplate.layout,
+                        margin: { l: 50, r: 30, t: 30, b: 50 }
+                    }, { responsive: true });
+                })();
+                
+
+    // Filter functionality
+    document.querySelectorAll('.filter-select').forEach(select => {
+        select.addEventListener('change', function() {
+            const source = this.dataset.source;
+            const column = this.dataset.column;
+            const value = this.value;
+
+            // Filter logic would update charts/tables here
+            console.log('Filter:', source, column, value);
+        });
+    });
+    </script>
+</body>
+</html>

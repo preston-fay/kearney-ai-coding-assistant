@@ -1,0 +1,60 @@
+name: sample_dashboard
+type: dashboard
+version: "1.0.0"
+
+datasets:
+  sales:
+    type: csv
+    path: data/sales.csv
+    keys: [region, product, month]
+    value_cols: [revenue, units]
+
+dashboard:
+  title: "Regional Sales Dashboard"
+
+  metrics:
+    - label: "Total Revenue"
+      source: sales
+      aggregation: "sum(revenue)"
+      format: "$,.0f"
+    - label: "Units Sold"
+      source: sales
+      aggregation: "sum(units)"
+      format: ",.0f"
+    - label: "Avg Deal Size"
+      source: sales
+      aggregation: "mean(revenue)"
+      format: "$,.2f"
+
+  charts:
+    - type: bar
+      source: sales
+      x: region
+      y: revenue
+      title: "Revenue by Region"
+    - type: line
+      source: sales
+      x: month
+      y: revenue
+      title: "Revenue Trend"
+    - type: pie
+      source: sales
+      labels: product
+      values: revenue
+      title: "Revenue by Product"
+
+  tables:
+    - source: sales
+      title: "Sales Details"
+      columns: [region, product, month, revenue, units]
+
+  filters:
+    - column: region
+      type: dropdown
+    - column: product
+      type: multi
+
+delivery:
+  audience: "Client executives"
+  output_tier: "static_html"
+  method: "Email attachment"

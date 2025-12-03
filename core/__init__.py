@@ -57,6 +57,11 @@ from core.interview_engine import (
     answers_to_spec_dict,
 )
 
+# Web Application Support (v2.1)
+from core.kds_theme import KDSTheme
+from core.kds_data import KDSData, KDSDataSourceConfig
+from core.webapp_engine import KDSWebApp, KDSStreamlitApp, KDSReactApp
+
 __all__ = [
     # Brand Guard
     "check_file",
@@ -99,4 +104,11 @@ __all__ = [
     "create_interview_state",
     "get_next_question",
     "answers_to_spec_dict",
+    # Web Application Support (v2.1)
+    "KDSTheme",
+    "KDSData",
+    "KDSDataSourceConfig",
+    "KDSWebApp",
+    "KDSStreamlitApp",
+    "KDSReactApp",
 ]
