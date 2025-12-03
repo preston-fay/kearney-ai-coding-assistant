@@ -176,14 +176,27 @@ def check_text_content(content: str, file_path: str) -> List[BrandViolation]:
 
 
 def check_python_file(file_path: Path) -> List[BrandViolation]:
-    """Check Python file for brand violations in color definitions."""
+    """
+    Check Python file for brand violations in color definitions.
+
+    Catches:
+    - Emojis in strings (page_icon, titles, comments)
+    - Forbidden colors in inline styles
+    - Hardcoded non-brand hex codes
+    - Gridline settings in matplotlib
+    """
     violations: List[BrandViolation] = []
 
     try:
-        content = file_path.read_text(encoding="utf-8")
-    except (IOError, UnicodeDecodeError) as e:
+        content = file_path.read_text(encoding="utf-8", errors="replace")
+    except Exception as e:
         logger.warning(f"Could not read {file_path}: {e}")
-        return violations
+        return [BrandViolation(
+            file_path=str(file_path),
+            rule="FILE_READ_ERROR",
+            message=f"Could not read file: {e}",
+            severity="warning"
+        )]
 
     violations.extend(check_text_content(content, str(file_path)))
 

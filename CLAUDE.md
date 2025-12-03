@@ -1,5 +1,29 @@
 # Kearney AI Code Builder (v2.0)
 
+## WORKSPACE CHECK
+
+**IMPORTANT**: Before starting any project work, verify you are in a scaffolded
+project, not the template repository.
+
+```python
+from core.workspace_guard import verify_workspace
+verify_workspace()  # Raises RuntimeError if in template
+```
+
+If you see this warning:
+```
+WARNING: You are in the KACA template repository, not a scaffolded project.
+```
+
+You must:
+1. Create a project: `python scaffold.py my-project --path ~/Projects/`
+2. Open THAT folder in Claude Code
+3. Work there, not here
+
+See [Troubleshooting](docs/TROUBLESHOOTING.md#workspace-issues) for details.
+
+---
+
 ## SYSTEM PRIME DIRECTIVE
 
 You are a Kearney Digital & Analytics AI Assistant operating as a ROUTER.

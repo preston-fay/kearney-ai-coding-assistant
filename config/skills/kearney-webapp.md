@@ -225,3 +225,151 @@ app.generate("exports/my_react_app/")
 | "Missing columns" | Verify columns exist in source data |
 | "Data too large" | Switch to Streamlit tier |
 | "Brand violation" | Check for forbidden colors, fix and regenerate |
+
+---
+
+## Dependency Management (Mandatory)
+
+### Before Generation
+
+Verify the target environment has required packages:
+
+```python
+from core.streamlit_utils import verify_imports, STREAMLIT_ALL_DEPS
+
+success, missing = verify_imports(["streamlit", "pandas", "plotly", "seaborn"])
+if not success:
+    print(f"Missing: {missing}")
+```
+
+### During Generation
+
+Always generate `requirements.txt` using the standard deps:
+
+```python
+from core.streamlit_utils import generate_requirements
+from core.kds_utils import safe_write_text
+
+req_content = generate_requirements(include_viz=True)
+safe_write_text(output_dir / "requirements.txt", req_content)
+```
+
+### After Generation
+
+Install before testing:
+
+```bash
+pip install -r requirements.txt
+```
+
+Never assume dependencies are installed. Always verify.
+
+---
+
+## Launch Protocol (Streamlit)
+
+### Recommended: Use Launch Utility
+
+```python
+from core.streamlit_utils import launch_streamlit
+
+success, message = launch_streamlit(
+    app_path=Path("app.py"),
+    port=8501,
+    auto_kill=True,
+    install_deps=True
+)
+print(message)
+```
+
+### Manual Launch
+
+```bash
+# 1. Kill existing processes
+lsof -ti:8501 | xargs kill -9 2>/dev/null || true
+
+# 2. Install deps
+pip install -r requirements.txt -q
+
+# 3. Launch
+streamlit run app.py --server.port=8501 --server.headless=true
+
+# 4. Verify
+curl -s -o /dev/null -w "%{http_code}" http://localhost:8501
+```
+
+### Port Conflict Resolution
+
+If port 8501 is in use:
+1. Kill existing process: `lsof -ti:8501 | xargs kill -9`
+2. Or use alternate port: `--server.port=8502`
+
+---
+
+## Completion Checklist (Non-Negotiable)
+
+Do NOT declare a dashboard "complete" until ALL pass:
+
+| Check | Command | Expected |
+|-------|---------|----------|
+| Deps installed | `pip install -r requirements.txt` | Exit 0 |
+| Imports work | `python -c "import streamlit, pandas, plotly"` | No error |
+| App launches | `streamlit run app.py` | No error |
+| Health check | `curl http://localhost:PORT` | HTTP 200 |
+| Brand check | `python -m core.brand_guard .` | No errors |
+| No emojis | Check all `.py` files | None found |
+
+### Quick Validation Script
+
+```bash
+# Run all checks
+pip install -r requirements.txt -q && \
+python -c "import streamlit, pandas, plotly, seaborn" && \
+timeout 10 streamlit run app.py --server.headless=true &
+sleep 5 && curl -s -o /dev/null -w "%{http_code}" http://localhost:8501 | grep -q 200 && \
+echo "[ok] All checks passed"
+```
+
+---
+
+## Brand Compliance Reminders
+
+### No Emojis - Anywhere
+
+Emojis are forbidden in:
+- `page_icon` parameter
+- Titles and headers
+- Comments
+- Data labels
+
+Use Lucide icons instead (see below).
+
+### Lucide Icons (Approved Alternative)
+
+For Streamlit apps, use text-based indicators or Lucide icon names for documentation:
+
+| Use Case | Instead of Emoji | Use |
+|----------|------------------|-----|
+| Success | (checkmark emoji) | `[check]` or Lucide: `<CheckCircle />` |
+| Warning | (warning emoji) | `[!]` or Lucide: `<AlertTriangle />` |
+| Error | (x emoji) | `[x]` or Lucide: `<XCircle />` |
+| Info | (info emoji) | `[i]` or Lucide: `<Info />` |
+| Chart | (chart emoji) | Lucide: `<BarChart3 />` |
+| Dashboard | (graph emoji) | Lucide: `<LayoutDashboard />` |
+| Settings | (gear emoji) | Lucide: `<Settings />` |
+| Data | (folder emoji) | Lucide: `<Database />` |
+| Sleep/Rest | (zzz emoji) | Lucide: `<Moon />` |
+| Time | (clock emoji) | Lucide: `<Clock />` |
+
+For page icons in Streamlit, use simple ASCII or omit entirely:
+
+```python
+# Bad
+st.set_page_config(page_icon="(sleep emoji)")
+
+# Good
+st.set_page_config(page_icon="o")  # Simple circle
+
+# Better - omit entirely
+st.set_page_config(page_title="Sleep Study Dashboard", layout="wide")
+```

@@ -506,3 +506,144 @@ If these solutions don't resolve your issue:
 - **Teams**: #Claude-Code-Help
 - **Office Hours**: Wednesdays 2-3pm ET
 - **Email**: da-claude@kearney.com
+
+---
+
+## Workspace Issues
+
+### Working in Template Repository
+
+**Symptom:**
+```
+WARNING: You are in the KACA template repository, not a scaffolded project.
+
+Project work should happen in scaffolded projects, not the template.
+```
+
+**Why This Happens:**
+You opened the template repository in Claude Code instead of a scaffolded project. Working in the template pollutes the shared codebase.
+
+**Solution:**
+
+**Mac/Linux:**
+```bash
+cd ~/kaca-template
+python scaffold.py my-project --path ~/Projects/
+```
+
+**Windows (PowerShell):**
+```powershell
+cd $env:USERPROFILE\kaca-template
+python scaffold.py my-project --path $env:USERPROFILE\Projects
+```
+
+Then open `~/Projects/my-project/` (or `C:\Users\YourName\Projects\my-project\`) in Claude Code.
+
+### Accidentally Started Work in Template
+
+**Symptom:**
+You created files, wrote code, or generated outputs in the template repository.
+
+**Solution:**
+
+1. **Identify the work you did:**
+   ```bash
+   git status
+   ```
+
+2. **If work is in `data/`, `outputs/`, `exports/`, or `project_state/`:**
+   These directories are gitignored. Your work is safe but local.
+   - Create a new project: `python scaffold.py my-project --path ~/Projects/`
+   - Copy your data: `cp -r data/raw/* ~/Projects/my-project/data/raw/`
+   - Start fresh in the new project
+
+3. **If work modified tracked files:**
+   ```bash
+   # See what changed
+   git diff
+
+   # Discard changes to template files
+   git checkout -- core/ config/ .claude/
+
+   # Or reset everything
+   git reset --hard HEAD
+   ```
+
+4. **If you committed changes:**
+   ```bash
+   # Undo the last commit (keep changes as unstaged)
+   git reset HEAD~1
+
+   # Then move work to a proper project
+   ```
+
+### Symlinks/Junctions Broken
+
+**Symptom:**
+```
+FileNotFoundError: core/chart_engine.py
+```
+or `core/` and `config/` appear as empty directories.
+
+**Cause:**
+The symlinks (Mac/Linux) or junctions (Windows) to the template are broken, usually because the template was moved or deleted.
+
+**Solution:**
+
+**Mac/Linux:**
+```bash
+# Check where symlink points
+ls -la core/
+
+# If broken, recreate
+rm core config
+ln -s ~/kaca-template/core core
+ln -s ~/kaca-template/config config
+```
+
+**Windows (PowerShell as Admin):**
+```powershell
+# Check junction
+dir core
+
+# If broken, recreate
+rmdir core
+rmdir config
+cmd /c mklink /J core $env:USERPROFILE\kaca-template\core
+cmd /c mklink /J config $env:USERPROFILE\kaca-template\config
+```
+
+### Missing .kaca-version.json
+
+**Symptom:**
+Workspace guard thinks you're in the template even though you scaffolded.
+
+**Cause:**
+The `.kaca-version.json` file is missing from your project root.
+
+**Solution:**
+
+Create the file manually:
+```bash
+echo '{"version": "2.0.0", "scaffolded": "2024-01-01", "template": "kaca"}' > .kaca-version.json
+```
+
+Or re-scaffold the project (this will preserve your data if in `data/raw/`).
+
+### Template Repository Has Pollution
+
+**Symptom:**
+Your template repo has `project_state/`, filled `data/` directories, or `outputs/`.
+
+**Solution:**
+These directories are gitignored, so they won't affect the template for others:
+
+```bash
+# Verify they're not tracked
+git status
+
+# Clean up if needed (removes untracked files)
+git clean -fd data/ outputs/ exports/ project_state/
+```
+
+**WARNING:** `git clean -fd` permanently deletes files. Check `git status` first.

@@ -62,6 +62,26 @@ from core.kds_theme import KDSTheme
 from core.kds_data import KDSData, KDSDataSourceConfig
 from core.webapp_engine import KDSWebApp, KDSStreamlitApp, KDSReactApp
 
+# Utilities (v2.2)
+from core.kds_utils import safe_write_text, safe_read_text
+from core.streamlit_utils import (
+    launch_streamlit,
+    generate_requirements,
+    verify_imports,
+    is_port_in_use,
+    find_available_port,
+    STREAMLIT_CORE_DEPS,
+    STREAMLIT_ALL_DEPS,
+)
+
+# Workspace Protection (v2.2)
+from core.workspace_guard import (
+    is_template_repo,
+    verify_workspace,
+    get_workspace_info,
+    require_project_workspace,
+)
+
 __all__ = [
     # Brand Guard
     "check_file",
@@ -111,4 +131,19 @@ __all__ = [
     "KDSWebApp",
     "KDSStreamlitApp",
     "KDSReactApp",
+    # Utilities (v2.2)
+    "safe_write_text",
+    "safe_read_text",
+    "launch_streamlit",
+    "generate_requirements",
+    "verify_imports",
+    "is_port_in_use",
+    "find_available_port",
+    "STREAMLIT_CORE_DEPS",
+    "STREAMLIT_ALL_DEPS",
+    # Workspace Protection (v2.2)
+    "is_template_repo",
+    "verify_workspace",
+    "get_workspace_info",
+    "require_project_workspace",
 ]

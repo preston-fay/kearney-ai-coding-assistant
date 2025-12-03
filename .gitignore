@@ -1,4 +1,44 @@
-# Python
+# ============================================================
+# WORKSPACE PROTECTION
+# This is a template repo - project work should happen in
+# scaffolded projects, not here. These patterns catch accidents.
+# ============================================================
+
+# Project state (should only exist in scaffolded projects)
+project_state/
+!project_state/.gitkeep
+
+# Data files (never commit client data)
+data/raw/*
+data/processed/*
+data/external/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/external/.gitkeep
+
+# Outputs (regenerable)
+outputs/
+exports/
+
+# Large data files (anywhere in repo)
+*.csv
+*.xlsx
+*.xls
+*.parquet
+*.duckdb
+*.sqlite
+*.db
+
+# Sensitive
+.env
+.env.*
+*.pem
+*.key
+
+# ============================================================
+# PYTHON
+# ============================================================
+
 __pycache__/
 *.py[cod]
 *$py.class
@@ -36,29 +76,36 @@ ENV/
 htmlcov/
 .hypothesis/
 
-# IDEs
+# ============================================================
+# IDES AND EDITORS
+# ============================================================
+
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+
+# ============================================================
+# OS FILES
+# ============================================================
+
 .DS_Store
+Thumbs.db
 
-# Project-specific
-project_state/
-outputs/
-exports/
-data/raw/
-data/processed/
-logs/
-.sessions/
+# ============================================================
+# TEMPORARY FILES
+# ============================================================
 
-# Temporary files
 *.tmp
 *.log
 *.bak
 *_backup.*
-cleanup_audit.py
+logs/
+.sessions/
 
-# OS
-Thumbs.db
+# ============================================================
+# MISCELLANEOUS
+# ============================================================
+
+cleanup_audit.py

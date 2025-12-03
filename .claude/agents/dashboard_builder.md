@@ -206,3 +206,102 @@ update_task_status(
     output=str(output_path)
 )
 ```
+
+---
+
+## Pre-Launch Verification (Mandatory)
+
+Before declaring ANY dashboard complete, execute this checklist:
+
+### 1. Dependency Verification
+
+```python
+from core.streamlit_utils import install_requirements, verify_imports
+
+# Install
+install_requirements(Path("requirements.txt"))
+
+# Verify
+success, missing = verify_imports(["streamlit", "pandas", "plotly", "seaborn"])
+if not success:
+    raise RuntimeError(f"Missing modules: {missing}")
+```
+
+### 2. Brand Compliance Check
+
+```python
+from core.brand_guard import check_python_file, check_file
+
+# Check Python files
+for py_file in Path(".").glob("*.py"):
+    violations = check_python_file(py_file)
+    if violations:
+        for v in violations:
+            print(f"BRAND ERROR: {v.file_path}:{v.line_number} - {v.message}")
+        raise RuntimeError("Brand violations must be fixed")
+
+# Check HTML/CSS outputs
+for html_file in Path("exports").glob("*.html"):
+    violations = check_file(html_file)
+    # ... same handling
+```
+
+### 3. Launch Test
+
+```python
+from core.streamlit_utils import launch_streamlit
+
+success, message = launch_streamlit(
+    app_path=Path("app.py"),
+    port=8501,
+    auto_kill=True,
+    install_deps=True
+)
+
+if not success:
+    raise RuntimeError(f"Launch failed: {message}")
+
+print(f"[ok] {message}")
+```
+
+### 4. Health Check
+
+```python
+import urllib.request
+
+try:
+    response = urllib.request.urlopen("http://localhost:8501", timeout=5)
+    if response.status != 200:
+        raise RuntimeError(f"Health check failed: HTTP {response.status}")
+    print("[ok] Health check passed")
+except Exception as e:
+    raise RuntimeError(f"Health check failed: {e}")
+```
+
+### Completion Report Template
+
+Only after ALL checks pass, report:
+
+```
++==========================================================+
+|  DASHBOARD COMPLETE                                       |
++----------------------------------------------------------+
+|  Status:     VERIFIED & RUNNING                          |
+|  URL:        http://localhost:8501                       |
+|  Health:     HTTP 200 OK                                 |
++----------------------------------------------------------+
+|  Checks Passed:                                          |
+|    [ok] Dependencies installed                           |
+|    [ok] Imports verified                                 |
+|    [ok] Brand compliance verified                        |
+|    [ok] App launches without error                       |
+|    [ok] Health check passed                              |
++----------------------------------------------------------+
+|  Quick Commands:                                         |
+|    Open:   open http://localhost:8501                    |
+|    Stop:   lsof -ti:8501 | xargs kill                    |
+|    Logs:   streamlit run app.py (foreground)             |
++==========================================================+
+```
+
+Use text-based checkmarks `[ok]` or `[x]`, never emoji checkmarks or x marks.
