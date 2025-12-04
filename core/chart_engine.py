@@ -22,7 +22,7 @@ Brand Rules Enforced:
 
 import logging
 from pathlib import Path
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 import matplotlib
 matplotlib.use('Agg')  # Non-interactive backend for server use
@@ -643,6 +643,621 @@ class KDSChart:
         plt.tight_layout()
         return self
 
+    def waterfall(
+        self,
+        data: Sequence[float],
+        labels: Sequence[str],
+        title: str = "",
+        show_connectors: bool = True,
+        show_values: bool = True,
+        colors: Optional[Dict[str, str]] = None,
+    ) -> "KDSChart":
+        """
+        Create a KDS-compliant waterfall chart.
+
+        Common use: Revenue bridges, variance analysis, P&L waterfalls.
+
+        Args:
+            data: Values for each bar. Positive = increase, negative = decrease.
+                  First value is typically the starting point.
+                  Last value can be the ending total (will be drawn from baseline).
+            labels: Labels for each bar.
+            title: Chart title.
+            show_connectors: If True, show connector lines between bars.
+            show_values: If True, show value labels on bars.
+            colors: Optional dict with 'increase', 'decrease', 'total' colors.
+                    Defaults to KDS purple palette.
+
+        Returns:
+            self for method chaining.
+        """
+        import numpy as np
+
+        self.fig, self.ax = self._create_figure()
+
+        # Default colors using KDS palette
+        default_colors = {
+            'increase': KDSColors.PRIMARY,      # Kearney Purple for increases
+            'decrease': KDSColors.GRAY_400,     # Gray for decreases
+            'total': KDSColors.PALETTE[2],      # Dark purple for totals
+        }
+        if colors:
+            default_colors.update(colors)
+
+        n = len(data)
+        x = np.arange(n)
+
+        # Calculate cumulative positions for waterfall effect
+        cumulative = [0.0]  # Running total
+        bar_bottoms = []
+        bar_heights = []
+        bar_colors = []
+
+        for i, value in enumerate(data):
+            if i == 0:
+                # First bar: starts from 0
+                bar_bottoms.append(0)
+                bar_heights.append(value)
+                bar_colors.append(default_colors['total'])
+                cumulative.append(value)
+            elif i == n - 1:
+                # Last bar: total bar from 0 to final value
+                final_value = cumulative[-1]
+                bar_bottoms.append(0)
+                bar_heights.append(final_value)
+                bar_colors.append(default_colors['total'])
+            else:
+                # Middle bars: show change from previous cumulative
+                prev_cumulative = cumulative[-1]
+                if value >= 0:
+                    bar_bottoms.append(prev_cumulative)
+                    bar_heights.append(value)
+                    bar_colors.append(default_colors['increase'])
+                else:
+                    bar_bottoms.append(prev_cumulative + value)
+                    bar_heights.append(abs(value))
+                    bar_colors.append(default_colors['decrease'])
+                cumulative.append(prev_cumulative + value)
+
+        # Draw bars
+        bars = self.ax.bar(x, bar_heights, bottom=bar_bottoms, color=bar_colors, width=0.6)
+
+        # Draw connector lines
+        if show_connectors and n > 1:
+            for i in range(n - 1):
+                if i == n - 2:
+                    # Don't draw connector to total bar
+                    continue
+                y_connect = bar_bottoms[i] + bar_heights[i]
+                self.ax.hlines(
+                    y=y_connect,
+                    xmin=x[i] + 0.3,
+                    xmax=x[i + 1] - 0.3,
+                    color=KDSColors.GRAY_400,
+                    linestyle='--',
+                    linewidth=1,
+                    alpha=0.7
+                )
+
+        # Add value labels
+        if show_values:
+            text_color = KDSColors.TEXT_LIGHT if self.dark_mode else KDSColors.TEXT_DARK
+            for i, (bar, value) in enumerate(zip(bars, data)):
+                height = bar.get_height()
+                bottom = bar.get_y()
+                # Position label above or below bar based on value sign
+                if i == 0 or i == n - 1:
+                    # Total bars: label above
+                    y_pos = bottom + height
+                    va = 'bottom'
+                    offset = 5
+                elif value >= 0:
+                    y_pos = bottom + height
+                    va = 'bottom'
+                    offset = 5
+                else:
+                    y_pos = bottom
+                    va = 'top'
+                    offset = -5
+
+                self.ax.annotate(
+                    self._format_value(value if i != n - 1 else bar_heights[i]),
+                    xy=(bar.get_x() + bar.get_width() / 2, y_pos),
+                    xytext=(0, offset),
+                    textcoords="offset points",
+                    ha="center",
+                    va=va,
+                    fontsize=10,
+                    color=text_color,
+                )
+
+        self.ax.set_xticks(x)
+        self.ax.set_xticklabels(labels)
+
+        if title:
+            self.ax.set_title(title, fontsize=14, fontweight=600, pad=20)
+
+        # Setup smart formatting for y-axis
+        self._setup_axis_formatter(self.ax, axis='y')
+
+        self.ax.spines["top"].set_visible(False)
+        self.ax.spines["right"].set_visible(False)
+
+        plt.tight_layout()
+        return self
+
+    def stacked_bar(
+        self,
+        data: Dict[str, Sequence[float]],
+        labels: Sequence[str],
+        title: str = "",
+        xlabel: str = "",
+        ylabel: str = "",
+        horizontal: bool = False,
+        show_values: bool = True,
+        show_totals: bool = True,
+        colors: Optional[List[str]] = None,
+    ) -> "KDSChart":
+        """
+        Create a KDS-compliant stacked bar chart.
+
+        Common use: Part-to-whole comparisons across categories.
+
+        Args:
+            data: Dict mapping series names to their values per category.
+            labels: Category labels.
+            title: Chart title.
+            xlabel: X-axis label.
+            ylabel: Y-axis label.
+            horizontal: If True, create horizontal stacked bars.
+            show_values: If True, show values inside each segment.
+            show_totals: If True, show total at end of each bar.
+            colors: Optional custom colors for series.
+
+        Returns:
+            self for method chaining.
+        """
+        import numpy as np
+
+        self.fig, self.ax = self._create_figure()
+
+        series_names = list(data.keys())
+        n_series = len(series_names)
+        n_categories = len(labels)
+
+        if colors is None:
+            colors = self._get_colors(n_series, chart_type="bar")
+
+        x = np.arange(n_categories)
+        text_color = KDSColors.TEXT_LIGHT if self.dark_mode else KDSColors.TEXT_DARK
+
+        # Calculate totals for each category
+        totals = [sum(data[series][i] for series in series_names) for i in range(n_categories)]
+
+        # Stack the bars
+        bottom = np.zeros(n_categories)
+        for idx, series_name in enumerate(series_names):
+            values = list(data[series_name])
+            if horizontal:
+                bars = self.ax.barh(x, values, left=bottom, label=series_name, color=colors[idx], height=0.6)
+            else:
+                bars = self.ax.bar(x, values, bottom=bottom, label=series_name, color=colors[idx], width=0.6)
+
+            # Add value labels inside segments
+            if show_values:
+                for i, (bar, value) in enumerate(zip(bars, values)):
+                    if value > 0:  # Only show if segment is visible
+                        if horizontal:
+                            cx = bar.get_x() + bar.get_width() / 2
+                            cy = bar.get_y() + bar.get_height() / 2
+                        else:
+                            cx = bar.get_x() + bar.get_width() / 2
+                            cy = bar.get_y() + bar.get_height() / 2
+
+                        # Only show label if segment is large enough
+                        segment_ratio = value / totals[i] if totals[i] > 0 else 0
+                        if segment_ratio > 0.08:  # Show if > 8% of total
+                            self.ax.annotate(
+                                self._format_value(value),
+                                xy=(cx, cy),
+                                ha="center",
+                                va="center",
+                                fontsize=9,
+                                color=KDSColors.TEXT_LIGHT,
+                                fontweight=500,
+                            )
+
+            bottom = bottom + np.array(values)
+
+        # Add total labels
+        if show_totals:
+            for i, total in enumerate(totals):
+                if horizontal:
+                    self.ax.annotate(
+                        self._format_value(total),
+                        xy=(total, i),
+                        xytext=(5, 0),
+                        textcoords="offset points",
+                        ha="left",
+                        va="center",
+                        fontsize=10,
+                        color=text_color,
+                        fontweight=600,
+                    )
+                else:
+                    self.ax.annotate(
+                        self._format_value(total),
+                        xy=(i, total),
+                        xytext=(0, 5),
+                        textcoords="offset points",
+                        ha="center",
+                        va="bottom",
+                        fontsize=10,
+                        color=text_color,
+                        fontweight=600,
+                    )
+
+        if horizontal:
+            self.ax.set_yticks(x)
+            self.ax.set_yticklabels(labels)
+            self._setup_axis_formatter(self.ax, axis='x')
+        else:
+            self.ax.set_xticks(x)
+            self.ax.set_xticklabels(labels)
+            self._setup_axis_formatter(self.ax, axis='y')
+
+        if xlabel:
+            self.ax.set_xlabel(xlabel)
+        if ylabel:
+            self.ax.set_ylabel(ylabel)
+        if title:
+            self.ax.set_title(title, fontsize=14, fontweight=600, pad=20)
+
+        self.ax.legend(loc='upper right')
+        self.ax.spines["top"].set_visible(False)
+        self.ax.spines["right"].set_visible(False)
+
+        plt.tight_layout()
+        return self
+
+    def combo(
+        self,
+        bar_data: Sequence[float],
+        line_data: Sequence[float],
+        labels: Sequence[str],
+        title: str = "",
+        bar_label: str = "",
+        line_label: str = "",
+        xlabel: str = "",
+        bar_ylabel: str = "",
+        line_ylabel: str = "",
+        show_values: bool = True,
+        bar_color: Optional[str] = None,
+        line_color: Optional[str] = None,
+    ) -> "KDSChart":
+        """
+        Create a KDS-compliant combo chart with bars and line overlay.
+
+        Common use: Revenue vs margin, volume vs price, actuals vs targets.
+
+        Uses dual y-axes: left for bars, right for line.
+
+        Args:
+            bar_data: Values for bars (left y-axis).
+            line_data: Values for line (right y-axis).
+            labels: Category labels (x-axis).
+            title: Chart title.
+            bar_label: Label for bar series (legend).
+            line_label: Label for line series (legend).
+            xlabel: X-axis label.
+            bar_ylabel: Left y-axis label (for bars).
+            line_ylabel: Right y-axis label (for line).
+            show_values: If True, show value labels.
+            bar_color: Custom color for bars.
+            line_color: Custom color for line.
+
+        Returns:
+            self for method chaining.
+        """
+        import numpy as np
+
+        self.fig, self.ax = self._create_figure()
+
+        # Colors
+        if bar_color is None:
+            bar_color = KDSColors.PRIMARY
+        if line_color is None:
+            line_color = KDSColors.PALETTE[1]  # Light purple
+
+        x = np.arange(len(labels))
+        text_color = KDSColors.TEXT_LIGHT if self.dark_mode else KDSColors.TEXT_DARK
+
+        # Create bars on primary axis
+        bars = self.ax.bar(x, bar_data, color=bar_color, width=0.6, label=bar_label, alpha=0.9)
+
+        # Add bar value labels
+        if show_values:
+            for bar, value in zip(bars, bar_data):
+                height = bar.get_height()
+                self.ax.annotate(
+                    self._format_value(value),
+                    xy=(bar.get_x() + bar.get_width() / 2, height),
+                    xytext=(0, 5),
+                    textcoords="offset points",
+                    ha="center",
+                    va="bottom",
+                    fontsize=9,
+                    color=text_color,
+                )
+
+        self.ax.set_xticks(x)
+        self.ax.set_xticklabels(labels)
+        if bar_ylabel:
+            self.ax.set_ylabel(bar_ylabel, color=bar_color)
+        self.ax.tick_params(axis='y', labelcolor=bar_color)
+        self._setup_axis_formatter(self.ax, axis='y')
+
+        # Create secondary axis for line
+        ax2 = self.ax.twinx()
+        ax2.set_facecolor('none')  # Transparent background
+
+        # Plot line on secondary axis
+        line = ax2.plot(x, line_data, color=line_color, marker='o', markersize=8,
+                       linewidth=2.5, label=line_label)
+
+        # Add line value labels
+        if show_values:
+            for i, value in enumerate(line_data):
+                ax2.annotate(
+                    self._format_value(value),
+                    xy=(i, value),
+                    xytext=(0, 10),
+                    textcoords="offset points",
+                    ha="center",
+                    va="bottom",
+                    fontsize=9,
+                    color=line_color,
+                    fontweight=500,
+                )
+
+        if line_ylabel:
+            ax2.set_ylabel(line_ylabel, color=line_color)
+        ax2.tick_params(axis='y', labelcolor=line_color)
+        ax2.spines["top"].set_visible(False)
+
+        if xlabel:
+            self.ax.set_xlabel(xlabel)
+        if title:
+            self.ax.set_title(title, fontsize=14, fontweight=600, pad=20)
+
+        # Combined legend
+        lines1, labels1 = self.ax.get_legend_handles_labels()
+        lines2, labels2 = ax2.get_legend_handles_labels()
+        if bar_label or line_label:
+            self.ax.legend(lines1 + lines2, labels1 + labels2, loc='upper left')
+
+        self.ax.spines["top"].set_visible(False)
+        self.ax.spines["right"].set_visible(False)
+
+        plt.tight_layout()
+        return self
+
+    def bullet(
+        self,
+        actual: float,
+        target: float,
+        ranges: Sequence[float],
+        title: str = "",
+        label: str = "",
+        horizontal: bool = True,
+        show_values: bool = True,
+        range_colors: Optional[List[str]] = None,
+    ) -> "KDSChart":
+        """
+        Create a KDS-compliant bullet chart.
+
+        Common use: KPI performance vs target with context ranges.
+
+        Args:
+            actual: The actual/current value (shown as main bar).
+            target: The target value (shown as marker line).
+            ranges: Threshold values for background ranges (poor/ok/good).
+            horizontal: If True, horizontal bullet (default). Vertical otherwise.
+            show_values: If True, show value labels.
+            range_colors: Colors for range bands. Defaults to grays.
+
+        Returns:
+            self for method chaining.
+        """
+        self.fig, self.ax = self._create_figure()
+
+        # Default range colors (light to dark grays)
+        if range_colors is None:
+            range_colors = [KDSColors.GRAY_200, KDSColors.GRAY_300, KDSColors.GRAY_400]
+
+        # Ensure we have enough colors
+        while len(range_colors) < len(ranges):
+            range_colors.append(KDSColors.GRAY_400)
+
+        text_color = KDSColors.TEXT_LIGHT if self.dark_mode else KDSColors.TEXT_DARK
+        sorted_ranges = sorted(ranges)
+
+        if horizontal:
+            # Draw range bands (background)
+            prev = 0
+            for i, r in enumerate(sorted_ranges):
+                self.ax.barh(0, r - prev, left=prev, height=0.5,
+                            color=range_colors[i], alpha=0.6)
+                prev = r
+
+            # Draw actual value bar
+            self.ax.barh(0, actual, height=0.25, color=KDSColors.PRIMARY)
+
+            # Draw target marker
+            self.ax.axvline(x=target, ymin=0.25, ymax=0.75,
+                          color=KDSColors.TEXT_DARK, linewidth=3)
+
+            # Labels
+            if show_values:
+                self.ax.annotate(
+                    f"Actual: {self._format_value(actual)}",
+                    xy=(actual, 0.15),
+                    xytext=(5, 0),
+                    textcoords="offset points",
+                    ha="left",
+                    va="center",
+                    fontsize=10,
+                    color=KDSColors.PRIMARY,
+                    fontweight=600,
+                )
+                self.ax.annotate(
+                    f"Target: {self._format_value(target)}",
+                    xy=(target, -0.15),
+                    xytext=(5, 0),
+                    textcoords="offset points",
+                    ha="left",
+                    va="center",
+                    fontsize=10,
+                    color=text_color,
+                )
+
+            self.ax.set_ylim(-0.4, 0.4)
+            self.ax.set_xlim(0, max(sorted_ranges[-1], actual, target) * 1.1)
+            self.ax.set_yticks([])
+            self._setup_axis_formatter(self.ax, axis='x')
+
+        else:
+            # Vertical bullet chart
+            prev = 0
+            for i, r in enumerate(sorted_ranges):
+                self.ax.bar(0, r - prev, bottom=prev, width=0.5,
+                           color=range_colors[i], alpha=0.6)
+                prev = r
+
+            # Draw actual value bar
+            self.ax.bar(0, actual, width=0.25, color=KDSColors.PRIMARY)
+
+            # Draw target marker
+            self.ax.axhline(y=target, xmin=0.25, xmax=0.75,
+                          color=KDSColors.TEXT_DARK, linewidth=3)
+
+            if show_values:
+                self.ax.annotate(
+                    f"Actual: {self._format_value(actual)}",
+                    xy=(0.15, actual),
+                    xytext=(0, 5),
+                    textcoords="offset points",
+                    ha="center",
+                    va="bottom",
+                    fontsize=10,
+                    color=KDSColors.PRIMARY,
+                    fontweight=600,
+                )
+                self.ax.annotate(
+                    f"Target: {self._format_value(target)}",
+                    xy=(-0.15, target),
+                    xytext=(0, 5),
+                    textcoords="offset points",
+                    ha="center",
+                    va="bottom",
+                    fontsize=10,
+                    color=text_color,
+                )
+
+            self.ax.set_xlim(-0.4, 0.4)
+            self.ax.set_ylim(0, max(sorted_ranges[-1], actual, target) * 1.1)
+            self.ax.set_xticks([])
+            self._setup_axis_formatter(self.ax, axis='y')
+
+        if title:
+            self.ax.set_title(title, fontsize=14, fontweight=600, pad=20)
+        if label:
+            if horizontal:
+                self.ax.set_xlabel(label)
+            else:
+                self.ax.set_ylabel(label)
+
+        self.ax.spines["top"].set_visible(False)
+        self.ax.spines["right"].set_visible(False)
+        self.ax.spines["left"].set_visible(False)
+        self.ax.spines["bottom"].set_visible(False)
+
+        plt.tight_layout()
+        return self
+
+    def histogram(
+        self,
+        data: Sequence[float],
+        bins: Union[int, Sequence[float]] = 10,
+        title: str = "",
+        xlabel: str = "",
+        ylabel: str = "Frequency",
+        show_values: bool = False,
+        color: Optional[str] = None,
+    ) -> "KDSChart":
+        """
+        Create a KDS-compliant histogram.
+
+        Common use: Distribution analysis, frequency analysis.
+
+        Args:
+            data: Raw data values to bin and count.
+            bins: Number of bins or sequence of bin edges.
+            title: Chart title.
+            xlabel: X-axis label.
+            ylabel: Y-axis label.
+            show_values: If True, show count labels on bars.
+            color: Custom bar color.
+
+        Returns:
+            self for method chaining.
+        """
+        self.fig, self.ax = self._create_figure()
+
+        if color is None:
+            color = KDSColors.PRIMARY
+
+        text_color = KDSColors.TEXT_LIGHT if self.dark_mode else KDSColors.TEXT_DARK
+
+        # Create histogram
+        n, bin_edges, patches = self.ax.hist(
+            data, bins=bins, color=color, edgecolor=KDSColors.BACKGROUND_DARK,
+            linewidth=1, alpha=0.9
+        )
+
+        # Add value labels
+        if show_values:
+            for count, patch in zip(n, patches):
+                if count > 0:
+                    x = patch.get_x() + patch.get_width() / 2
+                    y = patch.get_height()
+                    self.ax.annotate(
+                        f"{int(count)}",
+                        xy=(x, y),
+                        xytext=(0, 5),
+                        textcoords="offset points",
+                        ha="center",
+                        va="bottom",
+                        fontsize=9,
+                        color=text_color,
+                    )
+
+        if xlabel:
+            self.ax.set_xlabel(xlabel)
+        if ylabel:
+            self.ax.set_ylabel(ylabel)
+        if title:
+            self.ax.set_title(title, fontsize=14, fontweight=600, pad=20)
+
+        self._setup_axis_formatter(self.ax, axis='x')
+        self._setup_axis_formatter(self.ax, axis='y')
+
+        self.ax.spines["top"].set_visible(False)
+        self.ax.spines["right"].set_visible(False)
+
+        plt.tight_layout()
+        return self
+
     def save(
         self,
         path: Union[str, Path],
@@ -781,10 +1396,58 @@ class KDSChart:
         return (svg_path, png_path)
 
 
+def recommend_chart_type(data_story: str, data_shape: Optional[Dict[str, int]] = None) -> str:
+    """
+    Suggest chart type based on story intent and data characteristics.
+
+    Args:
+        data_story: One of:
+            - "comparison" (compare values across categories)
+            - "change_over_time" (show trends)
+            - "part_to_whole" (show composition)
+            - "correlation" (show relationships)
+            - "distribution" (show frequency/spread)
+            - "bridge" (show incremental changes)
+            - "performance" (show actual vs target)
+            - "dual_metric" (show two related metrics)
+        data_shape: Optional dict with hints like:
+            - "series": number of data series (1, 2, many)
+            - "categories": number of categories
+            - "has_negative": whether data includes negative values
+
+    Returns:
+        Recommended chart type string.
+    """
+    recommendations = {
+        "comparison": "bar",
+        "change_over_time": "line",
+        "part_to_whole": "pie",
+        "correlation": "scatter",
+        "distribution": "histogram",
+        "bridge": "waterfall",
+        "performance": "bullet",
+        "dual_metric": "combo",
+    }
+
+    chart_type = recommendations.get(data_story, "bar")
+
+    # Refine based on data shape
+    if data_shape:
+        if data_story == "comparison" and data_shape.get("series", 1) > 1:
+            chart_type = "grouped_bar"
+        elif data_story == "part_to_whole" and data_shape.get("categories", 0) > 5:
+            chart_type = "stacked_bar"
+
+    return chart_type
+
+
 def main():
     """Demo of KDSChart capabilities."""
+    import random
+
     # Example usage with size presets
     print("Creating charts with KDSChart...")
+    print("\n--- Original Chart Types ---")
 
     # Bar chart - presentation size (default), SVG output
     chart = KDSChart(size_preset="presentation")
@@ -817,6 +1480,82 @@ def main():
     chart.bar(data, labels, title="Monthly Sales")
     chart.save("outputs/charts/demo_custom.svg")
     print("  Saved: demo_custom.svg (custom 1400x800)")
+
+    print("\n--- New Chart Types (v2) ---")
+
+    # Waterfall chart - Revenue bridge
+    chart = KDSChart(size_preset="presentation")
+    chart.waterfall(
+        data=[100, 20, -15, 30, -10, 125],
+        labels=['Q3 Start', 'Growth', 'Churn', 'Upsell', 'Costs', 'Q4 End'],
+        title='Revenue Bridge Q3 to Q4 ($ millions)'
+    )
+    chart.save("outputs/charts/demo_waterfall.svg")
+    print("  Saved: demo_waterfall.svg (waterfall chart)")
+
+    # Stacked bar chart - Revenue by product
+    chart = KDSChart(size_preset="presentation")
+    chart.stacked_bar(
+        data={
+            'Product A': [30, 35, 40, 45],
+            'Product B': [25, 30, 28, 35],
+            'Product C': [15, 18, 22, 25],
+        },
+        labels=['Q1', 'Q2', 'Q3', 'Q4'],
+        title='Revenue by Product ($ millions)'
+    )
+    chart.save("outputs/charts/demo_stacked.svg")
+    print("  Saved: demo_stacked.svg (stacked bar chart)")
+
+    # Combo chart - Revenue vs Margin
+    chart = KDSChart(size_preset="presentation")
+    chart.combo(
+        bar_data=[100, 120, 140, 160],
+        line_data=[10, 12, 11, 15],
+        labels=['Q1', 'Q2', 'Q3', 'Q4'],
+        title='Revenue vs Margin',
+        bar_label='Revenue ($M)',
+        line_label='Margin (%)',
+        bar_ylabel='Revenue',
+        line_ylabel='Margin %'
+    )
+    chart.save("outputs/charts/demo_combo.svg")
+    print("  Saved: demo_combo.svg (combo chart)")
+
+    # Bullet chart - Sales performance
+    chart = KDSChart(size_preset="document")
+    chart.bullet(
+        actual=85,
+        target=100,
+        ranges=[50, 75, 100],
+        title='Sales Performance vs Target'
+    )
+    chart.save("outputs/charts/demo_bullet.svg")
+    print("  Saved: demo_bullet.svg (bullet chart)")
+
+    # Histogram - Distribution analysis
+    chart = KDSChart(size_preset="document")
+    random.seed(42)
+    dist_data = [random.gauss(50, 15) for _ in range(200)]
+    chart.histogram(
+        data=dist_data,
+        bins=15,
+        title='Customer Age Distribution',
+        xlabel='Age',
+        ylabel='Count'
+    )
+    chart.save("outputs/charts/demo_histogram.svg")
+    print("  Saved: demo_histogram.svg (histogram)")
+
+    print("\n--- Chart Recommendation Demo ---")
+    stories = ["bridge", "distribution", "performance", "dual_metric", "comparison"]
+    for story in stories:
+        rec = recommend_chart_type(story)
+        print(f"  '{story}' -> {rec}")
+
+    # Test with data shape
+    rec = recommend_chart_type("comparison", {"series": 3})
+    print(f"  'comparison' with 3 series -> {rec}")
 
     print("\nDemo charts saved to outputs/charts/")
 
