@@ -325,3 +325,117 @@ def slugify(name: str) -> str:
     # Remove leading/trailing hyphens
     slug = slug.strip('-')
     return slug or 'unnamed-brand'
+
+
+def create_from_assets(
+    files: List[Path],
+    slug: str,
+    name: str,
+) -> DesignSystem:
+    """
+    Create a design system from uploaded assets.
+
+    Analyzes images, PowerPoints, and PDFs to extract brand tokens.
+
+    Args:
+        files: List of asset file paths.
+        slug: Slug for the new design system.
+        name: Display name for the brand.
+
+    Returns:
+        The created DesignSystem.
+    """
+    from .analyzer import analyze_assets
+    from .schema import (
+        DesignSystem,
+        Meta,
+        ColorPalette,
+        Typography,
+        FontFamily,
+        Logo,
+    )
+
+    # Analyze all provided assets
+    data = analyze_assets(files)
+
+    # Build color palette
+    colors = data.get('colors', [])
+    primary = colors[0] if colors else "#7823DC"
+    secondary = colors[1] if len(colors) > 1 else None
+    accent = colors[2] if len(colors) > 2 else None
+    chart_palette = colors[:6] if colors else [primary]
+
+    # Build typography
+    fonts = data.get('fonts', [])
+    primary_font = fonts[0] if fonts else "Inter"
+    body_font = fonts[1] if len(fonts) > 1 else primary_font
+
+    typography = Typography(
+        heading=FontFamily(
+            family=primary_font,
+            fallback="Arial, sans-serif",
+            weights=[400, 500, 600],
+        ),
+        body=FontFamily(
+            family=body_font,
+            fallback="Arial, sans-serif",
+            weights=[400, 500],
+        ),
+        monospace=FontFamily(
+            family="Courier New",
+            fallback="monospace",
+            weights=[400],
+        ),
+    )
+
+    # Build logos from candidates
+    logos = {}
+    logo_candidates = data.get('logos', [])
+    if logo_candidates:
+        # Copy the first logo candidate to the brand directory
+        first_logo = logo_candidates[0]
+        source_path = Path(first_logo['path'])
+        if source_path.exists():
+            logo_path = copy_logo_to_brand(slug, source_path, 'primary')
+            logos['primary'] = Logo(
+                path=logo_path,
+                width=first_logo.get('width'),
+                height=first_logo.get('height'),
+                placement=['webapp_header', 'dashboard_header'],
+            )
+
+    # Create the design system
+    ds = DesignSystem(
+        meta=Meta(
+            name=name,
+            slug=slug,
+            version="1.0.0",
+            extraction_mode="assets",
+        ),
+        colors=ColorPalette(
+            primary=primary,
+            secondary=secondary,
+            accent=accent,
+            chart_palette=chart_palette,
+            forbidden=[
+                "#00FF00",
+                "#008000",
+                "#4CAF50",
+                "#2E7D32",
+            ],
+        ),
+        typography=typography,
+        spacing={'base': 8},
+        borders={'radius': '4px', 'width': '1px'},
+        backgrounds={'dark': '#1E1E1E', 'light': '#FFFFFF'},
+        text={'on_dark': '#FFFFFF', 'on_light': '#333333'},
+        logos=logos,
+        extraction_metadata={
+            'source': 'assets',
+            'files_analyzed': len(files),
+        },
+    )
+
+    # Save and return
+    save_design_system(ds)
+    return ds

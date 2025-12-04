@@ -39,6 +39,7 @@ from .manager import (
     get_default,
     delete_design_system,
     create_from_url,
+    create_from_assets,
     slugify,
 )
 from .applicator import (
@@ -67,6 +68,7 @@ __all__ = [
     "get_default",
     "delete_design_system",
     "create_from_url",
+    "create_from_assets",
     "slugify",
     # Applicator
     "apply_design_system",
