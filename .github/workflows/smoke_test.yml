@@ -34,7 +34,8 @@ jobs:
               compute_diff, assess_plan_impact,
               PlanUpdater, update_plan_from_diff,
               check_file, check_directory,
-              profile_dataset
+              profile_dataset,
+              Telemetry, Event, EventType, Metrics, TelemetryTimer,
           )
           print('All core imports successful!')
           "
