@@ -169,6 +169,28 @@ Interactive web applications and tools.
 | `/webapp` | Generate web dashboard |
 | `/init` | Initialize new project (rarely needed) |
 
+### Express Mode and Templates
+
+For faster project setup, use express mode or templates:
+
+**Express Mode** - Streamlined interview with only 6-10 essential questions:
+```
+/interview --express
+```
+
+**Templates** - Start from a pre-filled specification:
+```
+/interview --template=quarterly_kpi_review
+```
+
+| Template | Type | Best For |
+|----------|------|----------|
+| `quarterly_kpi_review` | analytics | Recurring quarterly business reviews |
+| `executive_summary` | presentation | C-suite presentations |
+| `competitive_analysis` | research | Competitive landscape research |
+
+Templates only ask for project name, client, and data sources - everything else is pre-configured.
+
 ---
 
 ## Working with Data

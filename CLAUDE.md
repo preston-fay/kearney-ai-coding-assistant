@@ -351,7 +351,7 @@ update_task_status(task_id='1.2', status='done')
 | Command | Purpose |
 |---------|---------|
 | /init | Initialize new project from template |
-| /interview | Gather requirements via structured interview |
+| /interview | Gather requirements (`--express` for faster 6-10 questions, `--template=<name>` for pre-filled specs) |
 | /edit | Edit specific parts of specification |
 | /spec | View current specification |
 | /history | View specification version history |
