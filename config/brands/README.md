@@ -40,6 +40,51 @@ Options:
 4. View details
 5. Delete
 
+## brand.yaml Template
+
+```yaml
+# Design System Configuration
+meta:
+  name: "Client Name"
+  slug: "client-slug"
+  version: "1.0.0"
+  source_url: "https://client.com"  # Optional
+
+colors:
+  primary: "#0066CC"           # Main brand color
+  secondary: "#004499"         # Secondary (optional)
+  accent: "#FF6600"            # Accent (optional)
+  chart_palette:               # For data visualizations
+    - "#0066CC"
+    - "#FF6600"
+    - "#00AA88"
+  forbidden:                   # Colors to never use
+    - "#00FF00"
+
+typography:
+  heading:
+    family: "Open Sans"
+    fallback: "Arial, sans-serif"
+    weights: [400, 600, 700]
+  body:
+    family: "Roboto"
+    fallback: "Arial, sans-serif"
+    weights: [400, 500]
+
+backgrounds:
+  dark: "#1E1E1E"
+  light: "#FFFFFF"
+
+text:
+  on_dark: "#FFFFFF"
+  on_light: "#333333"
+
+logos:
+  primary:
+    path: "logo_primary.png"
+    placement: [webapp_header, dashboard_header]
+```
+
 ## Privacy
 
 Client design systems are **gitignored by default**. Only the Kearney design system is committed to the repository.

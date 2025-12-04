@@ -27,6 +27,12 @@
 │                                                                         │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                         │
+│  DESIGN SYSTEM                                                          │
+│  ─────────────                                                          │
+│  /design-system         Manage brand design systems                     │
+│                                                                         │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
 │  ERROR RECOVERY                                                         │
 │  ──────────────                                                         │
 │  /project:reset         Archive and start fresh                         │
@@ -303,6 +309,61 @@ Claude: Updated. spec.yaml is now version 2.
 - Reviewing what changed
 - Before rollback to see options
 - Audit trail
+
+---
+
+### /design-system
+
+**Purpose**: Manage brand design systems for multi-client support
+
+**Usage**:
+```
+/design-system                    # Show interactive menu
+/design-system list               # List available design systems
+/design-system view <slug>        # View design system details
+/design-system create <url>       # Create from client website
+/design-system delete <slug>      # Delete a design system
+```
+
+**When to use**:
+- Setting up client-branded projects
+- Creating new brand from client website
+- Switching between brand themes
+
+**Output**:
+- Design systems stored in `config/brands/{slug}/`
+- Creates `brand.yaml` with colors, fonts, logos
+- Client brands are gitignored for privacy
+
+**Example**:
+```
+You:    /design-system
+
+Claude: DESIGN SYSTEM MANAGER
+        ====================
+
+        What would you like to do?
+
+        1. List available design systems
+        2. View design system details
+        3. Create from client website
+        4. Create manually
+        5. Delete design system
+
+        Enter choice (1-5):
+
+You:    1
+
+Claude: AVAILABLE DESIGN SYSTEMS
+        ========================
+
+        - kearney: Kearney (#7823DC) [DEFAULT]
+        - acme-corp: Acme Corporation (#0066CC)
+
+        Total: 2 design systems
+```
+
+**Privacy**: Client design systems are gitignored. Only Kearney is committed to the repository.
 
 ---
 
