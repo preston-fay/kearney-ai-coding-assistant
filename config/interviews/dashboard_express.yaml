@@ -1,0 +1,75 @@
+# Interview Tree: Dashboard (Express)
+# Streamlined interview for experienced users
+# 8 essential questions that block execution if missing
+
+id: dashboard_express
+name: Dashboard (Express)
+version: "1.0.0"
+express: true
+
+defaults:
+  # Smart defaults for questions not asked
+  branding: kearney
+  deadline: asap
+  refresh_frequency: manual
+  mobile_responsive: false
+  export_enabled: true
+  theme: dark
+
+sections:
+  - id: essentials
+    name: Project Essentials
+    questions:
+      - id: project_name
+        prompt: What is the project name?
+        type: text
+        required: true
+
+      - id: client
+        prompt: Who is the client or stakeholder?
+        type: text
+        required: true
+
+      - id: dashboard_purpose
+        prompt: What decisions will users make with this dashboard?
+        type: text
+        required: true
+
+      - id: audience_level
+        prompt: Who is the primary audience?
+        type: choice
+        options:
+          - executive
+          - manager
+          - analyst
+          - technical
+        required: true
+
+      - id: data_sources
+        prompt: What data sources will feed the dashboard?
+        type: list
+        required: true
+
+      - id: key_metrics
+        prompt: What are the primary KPIs to display?
+        type: list
+        required: true
+
+      - id: interactivity_level
+        prompt: What level of interactivity is needed?
+        type: choice
+        options:
+          - static
+          - filters_only
+          - fully_interactive
+        required: true
+
+      - id: deployment_target
+        prompt: Where will this dashboard be deployed?
+        type: choice
+        options:
+          - html_file
+          - streamlit
+          - react
+        required: false
+        default: html_file

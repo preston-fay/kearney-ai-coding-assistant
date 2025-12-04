@@ -1,0 +1,79 @@
+# Interview Tree: Analytics (Express)
+# Streamlined interview for experienced users
+# 8 essential questions that block execution if missing
+
+id: analytics_express
+name: Analytics (Express)
+version: "1.0.0"
+express: true
+
+defaults:
+  # Smart defaults for questions not asked
+  visualization_format: svg
+  visualization_size: presentation
+  branding: kearney
+  deadline: asap
+  include_methodology: true
+  confidence_intervals: false
+  comparison_periods: []
+
+sections:
+  - id: essentials
+    name: Project Essentials
+    questions:
+      - id: project_name
+        prompt: What is the project name?
+        type: text
+        required: true
+
+      - id: client
+        prompt: Who is the client or stakeholder?
+        type: text
+        required: true
+
+      - id: business_question
+        prompt: What decision will this analysis inform?
+        type: text
+        required: true
+
+      - id: analysis_type
+        prompt: What type of analysis is this?
+        type: choice
+        options:
+          - descriptive
+          - diagnostic
+          - exploratory
+          - comparative
+          - trend
+          - segmentation
+        required: true
+
+      - id: data_sources
+        prompt: What data files or sources are available?
+        type: list
+        required: true
+
+      - id: key_metrics
+        prompt: What are the key metrics to analyze?
+        type: list
+        required: true
+
+      - id: audience_level
+        prompt: Who is the primary audience?
+        type: choice
+        options:
+          - executive
+          - manager
+          - analyst
+          - technical
+        required: true
+
+      - id: primary_deliverable
+        prompt: What is the primary deliverable format?
+        type: choice
+        options:
+          - slides
+          - report
+          - dashboard
+          - data_file
+        required: true

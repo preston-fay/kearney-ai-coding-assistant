@@ -1,0 +1,80 @@
+# Interview Tree: Research (Express)
+# Streamlined interview for experienced users
+# 8 essential questions that block execution if missing
+
+id: research_express
+name: Research (Express)
+version: "1.0.0"
+express: true
+
+defaults:
+  # Smart defaults for questions not asked
+  branding: kearney
+  deadline: asap
+  include_methodology: true
+  include_limitations: true
+  citation_style: inline
+  visual_style: kearney_standard
+
+sections:
+  - id: essentials
+    name: Project Essentials
+    questions:
+      - id: project_name
+        prompt: What is the project name?
+        type: text
+        required: true
+
+      - id: client
+        prompt: Who is the client or stakeholder?
+        type: text
+        required: true
+
+      - id: research_question
+        prompt: What question is this research answering?
+        type: text
+        required: true
+
+      - id: research_type
+        prompt: What type of research is this?
+        type: choice
+        options:
+          - market_sizing
+          - competitive_analysis
+          - trend_analysis
+          - customer_research
+          - benchmarking
+        required: true
+
+      - id: data_sources
+        prompt: What sources will you draw from?
+        type: list
+        required: false
+
+      - id: audience_level
+        prompt: Who is the primary audience?
+        type: choice
+        options:
+          - executive
+          - manager
+          - analyst
+        required: true
+
+      - id: primary_deliverable
+        prompt: What is the primary deliverable format?
+        type: choice
+        options:
+          - slides
+          - report
+          - memo
+          - data_file
+        required: true
+
+      - id: depth
+        prompt: How deep should the research go?
+        type: choice
+        options:
+          - quick_scan
+          - standard
+          - deep_dive
+        required: true

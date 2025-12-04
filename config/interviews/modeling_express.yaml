@@ -1,0 +1,83 @@
+# Interview Tree: Modeling (Express)
+# Streamlined interview for experienced users
+# 9 essential questions that block execution if missing
+
+id: modeling_express
+name: Modeling (Express)
+version: "1.0.0"
+express: true
+
+defaults:
+  # Smart defaults for questions not asked
+  branding: kearney
+  deadline: asap
+  validation_strategy: cross_validation
+  test_split: 0.2
+  random_state: 42
+  feature_selection: auto
+  hyperparameter_tuning: basic
+
+sections:
+  - id: essentials
+    name: Project Essentials
+    questions:
+      - id: project_name
+        prompt: What is the project name?
+        type: text
+        required: true
+
+      - id: client
+        prompt: Who is the client or stakeholder?
+        type: text
+        required: true
+
+      - id: business_question
+        prompt: What business decision will this model inform?
+        type: text
+        required: true
+
+      - id: problem_type
+        prompt: What type of modeling problem is this?
+        type: choice
+        options:
+          - classification
+          - regression
+          - clustering
+          - forecasting
+          - recommendation
+        required: true
+
+      - id: target_variable
+        prompt: What are you predicting?
+        type: text
+        required: true
+        condition: "problem_type != 'clustering'"
+
+      - id: data_sources
+        prompt: What data files or sources are available?
+        type: list
+        required: true
+
+      - id: key_features
+        prompt: What variables do you expect to be predictive?
+        type: list
+        required: false
+
+      - id: audience_level
+        prompt: Who is the primary audience for results?
+        type: choice
+        options:
+          - executive
+          - manager
+          - analyst
+          - technical
+        required: true
+
+      - id: interpretability_requirement
+        prompt: How important is model interpretability?
+        type: choice
+        options:
+          - black_box_ok
+          - some_explainability
+          - full_transparency
+        required: true
