@@ -142,6 +142,14 @@ from core.spec_diff import (
     DiffResult,
 )
 
+# Plan Updater (v3.2)
+from core.plan_updater import (
+    PlanUpdater,
+    PlanUpdateResult,
+    TaskUpdate,
+    update_plan_from_diff,
+)
+
 __all__ = [
     # Brand Guard
     "check_file",
@@ -247,4 +255,9 @@ __all__ = [
     "ChangeType",
     "ImpactLevel",
     "DiffResult",
+    # Plan Updater (v3.2)
+    "PlanUpdater",
+    "PlanUpdateResult",
+    "TaskUpdate",
+    "update_plan_from_diff",
 ]
