@@ -5,8 +5,13 @@ Conducts structured interviews with conditional logic and follow-up probes.
 
 The engine loads interview trees from config/interviews/ and orchestrates
 the conversation flow, producing a structured spec.yaml.
+
+Supports:
+- Express mode: Shorter interviews (6-10 questions) from *_express.yaml files
+- Template mode: Pre-filled specs that only ask delta questions
 """
 
+import logging
 import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
@@ -15,8 +20,13 @@ from dataclasses import dataclass, field
 import yaml
 
 
+logger = logging.getLogger(__name__)
+
 # Path to interview tree configurations
 INTERVIEWS_DIR = Path('config/interviews')
+
+# Path to spec templates
+TEMPLATES_DIR = Path('config/templates')
 
 
 @dataclass
@@ -111,17 +121,49 @@ def _parse_section(data: Dict[str, Any]) -> Section:
     )
 
 
-def load_interview_tree(project_type: str) -> Optional[InterviewTree]:
+def express_interview_exists(project_type: str) -> bool:
+    """
+    Check if an express interview exists for a project type.
+
+    Args:
+        project_type: Type ID (e.g., 'modeling', 'analytics').
+
+    Returns:
+        True if express interview file exists, False otherwise.
+    """
+    express_path = INTERVIEWS_DIR / f'{project_type}_express.yaml'
+    return express_path.exists()
+
+
+def load_interview_tree(
+    project_type: str,
+    express: bool = False,
+) -> Optional[InterviewTree]:
     """
     Load interview tree for a project type.
 
     Args:
         project_type: Type ID (e.g., 'modeling', 'presentation').
+        express: If True, attempt to load express (shorter) interview.
+                Falls back to full interview with warning if express doesn't exist.
 
     Returns:
         InterviewTree or None if not found.
     """
-    path = INTERVIEWS_DIR / f'{project_type}.yaml'
+    # Determine which file to load
+    if express:
+        express_path = INTERVIEWS_DIR / f'{project_type}_express.yaml'
+        if express_path.exists():
+            path = express_path
+        else:
+            logger.warning(
+                f"Express interview for '{project_type}' not found. "
+                f"Falling back to full interview."
+            )
+            path = INTERVIEWS_DIR / f'{project_type}.yaml'
+    else:
+        path = INTERVIEWS_DIR / f'{project_type}.yaml'
+
     if not path.exists():
         return None
 
@@ -142,17 +184,98 @@ def list_available_trees() -> List[str]:
     """List available interview tree IDs."""
     if not INTERVIEWS_DIR.exists():
         return []
-    return [p.stem for p in INTERVIEWS_DIR.glob('*.yaml')]
+    # Exclude express interviews from the main list
+    return [
+        p.stem for p in INTERVIEWS_DIR.glob('*.yaml')
+        if not p.stem.endswith('_express')
+    ]
 
 
-def get_project_type_menu() -> str:
-    """Get formatted menu of project types."""
+def list_available_templates() -> List[str]:
+    """
+    List available spec template names.
+
+    Returns:
+        List of template names (file stems) that contain _template metadata.
+    """
+    if not TEMPLATES_DIR.exists():
+        return []
+
+    templates = []
+    for path in TEMPLATES_DIR.glob('*.yaml'):
+        try:
+            content = path.read_text(encoding='utf-8')
+            data = yaml.safe_load(content)
+            # Only include files that have _template metadata
+            if data and '_template' in data:
+                templates.append(path.stem)
+        except (yaml.YAMLError, OSError):
+            # Skip files that can't be parsed
+            continue
+
+    return sorted(templates)
+
+
+def load_spec_template(template_name: str) -> Optional[Dict[str, Any]]:
+    """
+    Load a pre-filled spec template.
+
+    Templates are pre-filled spec.yaml structures with a _template section
+    containing metadata about the template (name, description, base_type).
+
+    Args:
+        template_name: Name of the template (file stem without .yaml).
+
+    Returns:
+        Dict containing the template data, or None if not found.
+        The _template section contains:
+            - name: Human-readable template name
+            - description: What the template is for
+            - base_type: Which interview to use for delta questions
+    """
+    path = TEMPLATES_DIR / f'{template_name}.yaml'
+    if not path.exists():
+        return None
+
+    try:
+        content = path.read_text(encoding='utf-8')
+        data = yaml.safe_load(content)
+
+        # Validate that this is a proper spec template
+        if not data or '_template' not in data:
+            logger.warning(
+                f"Template '{template_name}' missing _template metadata section."
+            )
+            return None
+
+        return data
+    except (yaml.YAMLError, OSError) as e:
+        logger.error(f"Failed to load template '{template_name}': {e}")
+        return None
+
+
+def get_project_type_menu(show_express_indicator: bool = True) -> str:
+    """
+    Get formatted menu of project types.
+
+    Args:
+        show_express_indicator: If True, show [EXPRESS] tag for types
+            that have express mode available.
+
+    Returns:
+        Formatted menu string.
+    """
     lines = ["What type of work product are you building?", ""]
     for i, (type_id, description) in enumerate(PROJECT_TYPES, 1):
-        lines.append(f"{i}. {description}")
+        if show_express_indicator and express_interview_exists(type_id):
+            lines.append(f"{i}. {description} [EXPRESS]")
+        else:
+            lines.append(f"{i}. {description}")
     lines.append("")
     lines.append("━" * 60)
     lines.append("Select one or more (e.g., '2' or '2, 3, 6')")
+    if show_express_indicator:
+        lines.append("[EXPRESS] = Express mode available (shorter interview)")
     lines.append("━" * 60)
     return '\n'.join(lines)
 
