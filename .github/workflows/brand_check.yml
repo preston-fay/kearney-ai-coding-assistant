@@ -1,0 +1,52 @@
+# .github/workflows/brand_check.yml
+name: Brand Compliance
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'outputs/**'
+      - 'exports/**'
+      - 'core/**/*.py'
+      - 'config/**'
+
+jobs:
+  brand-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run brand compliance check
+        run: |
+          python -m core.brand_guard check-directory outputs/ --strict || true
+          python -m core.brand_guard check-directory exports/ --strict || true
+          python -m core.brand_guard check-python core/ --strict
+
+      - name: Check for forbidden colors in code
+        run: |
+          # Check for green color codes in Python files
+          if grep -rn --include="*.py" -E "#(00FF00|008000|2E7D32|4CAF50|66BB6A|228B22|32CD32)" core/; then
+            echo "::error::Forbidden green colors detected in code!"
+            exit 1
+          fi
+          echo "No forbidden colors found."
+
+      - name: Check for emojis in code
+        run: |
+          # Check for common emoji patterns
+          if grep -rn --include="*.py" -P "[\x{1F300}-\x{1F9FF}]" core/ 2>/dev/null; then
+            echo "::error::Emojis detected in code!"
+            exit 1
+          fi
+          echo "No emojis found."

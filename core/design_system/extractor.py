@@ -7,7 +7,7 @@ Supports conservative (single page) and moderate (with CSS files) modes.
 
 import re
 import logging
-from typing import Dict, List, Any, Optional
+from typing import TYPE_CHECKING, Dict, List, Any, Optional
 from urllib.parse import urljoin, urlparse
 from collections import Counter
 
@@ -17,6 +17,9 @@ try:
     HAS_WEB_DEPS = True
 except ImportError:
     HAS_WEB_DEPS = False
+
+if TYPE_CHECKING:
+    from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
@@ -155,7 +158,7 @@ def _extract_moderate(url: str) -> Dict[str, Any]:
     }
 
 
-def _extract_colors_from_soup(soup: BeautifulSoup) -> List[str]:
+def _extract_colors_from_soup(soup: "BeautifulSoup") -> List[str]:
     """Extract colors from inline styles and style tags."""
     colors = []
 
@@ -194,7 +197,7 @@ def _extract_colors_from_text(text: str) -> List[str]:
     return colors
 
 
-def _extract_fonts_from_soup(soup: BeautifulSoup) -> List[str]:
+def _extract_fonts_from_soup(soup: "BeautifulSoup") -> List[str]:
     """Extract font families from page."""
     fonts = []
 
@@ -225,7 +228,7 @@ def _extract_fonts_from_text(text: str) -> List[str]:
     return fonts
 
 
-def _extract_from_css_files(soup: BeautifulSoup, base_url: str) -> tuple:
+def _extract_from_css_files(soup: "BeautifulSoup", base_url: str) -> tuple:
     """Fetch and parse external CSS files."""
     colors = []
     fonts = []
@@ -251,12 +254,12 @@ def _extract_from_css_files(soup: BeautifulSoup, base_url: str) -> tuple:
     return colors, fonts
 
 
-def _count_css_links(soup: BeautifulSoup) -> int:
+def _count_css_links(soup: "BeautifulSoup") -> int:
     """Count number of CSS link tags."""
     return len(soup.find_all('link', rel='stylesheet'))
 
 
-def _find_logo(soup: BeautifulSoup, base_url: str) -> Optional[str]:
+def _find_logo(soup: "BeautifulSoup", base_url: str) -> Optional[str]:
     """
     Find logo image URL in page.
 
