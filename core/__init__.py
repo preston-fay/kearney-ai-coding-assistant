@@ -116,6 +116,14 @@ from core.memory_integration import (
     get_client_overrides,
 )
 
+# Insight Engine (v3.2)
+from core.insight_engine import (
+    Insight,
+    Evidence,
+    InsightCatalog,
+    InsightEngine,
+)
+
 __all__ = [
     # Brand Guard
     "check_file",
@@ -204,4 +212,9 @@ __all__ = [
     "update_session_after_task",
     "apply_user_defaults_to_spec",
     "get_client_overrides",
+    # Insight Engine (v3.2)
+    "Insight",
+    "Evidence",
+    "InsightCatalog",
+    "InsightEngine",
 ]
