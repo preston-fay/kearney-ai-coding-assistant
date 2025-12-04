@@ -132,6 +132,16 @@ from core.action_titles import (
     validate_action_title,
 )
 
+# Spec Diff Engine (v3.2)
+from core.spec_diff import (
+    compute_diff,
+    assess_plan_impact,
+    SpecChange,
+    ChangeType,
+    ImpactLevel,
+    DiffResult,
+)
+
 __all__ = [
     # Brand Guard
     "check_file",
@@ -230,4 +240,11 @@ __all__ = [
     "transform_to_action_title",
     "suggest_action_titles",
     "validate_action_title",
+    # Spec Diff Engine (v3.2)
+    "compute_diff",
+    "assess_plan_impact",
+    "SpecChange",
+    "ChangeType",
+    "ImpactLevel",
+    "DiffResult",
 ]
