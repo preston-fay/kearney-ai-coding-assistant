@@ -108,6 +108,14 @@ from core.memory import (
     get_session_context,
 )
 
+# Memory Integration (v3.1)
+from core.memory_integration import (
+    get_agent_context,
+    update_session_after_task,
+    apply_user_defaults_to_spec,
+    get_client_overrides,
+)
+
 __all__ = [
     # Brand Guard
     "check_file",
@@ -191,4 +199,9 @@ __all__ = [
     "build_memory_context",
     "update_session_context",
     "get_session_context",
+    # Memory Integration (v3.1)
+    "get_agent_context",
+    "update_session_after_task",
+    "apply_user_defaults_to_spec",
+    "get_client_overrides",
 ]

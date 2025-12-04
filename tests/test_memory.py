@@ -286,3 +286,170 @@ class TestHelperFunctions:
         _set_nested(d, 'a.b.c', 'new')
 
         assert d['a']['b']['c'] == 'new'
+
+
+class TestMemoryIntegration:
+    """Tests for memory integration functions."""
+
+    def test_get_agent_context_interviewer(self, tmp_path):
+        """Should get interviewer-specific context."""
+        from core.memory_integration import get_agent_context
+        from core.memory import save_user_profile
+
+        with patch('core.memory.USER_PROFILE_PATH', tmp_path / 'profile.yaml'):
+            with patch('core.memory.USER_PROFILE_DIR', tmp_path):
+                save_user_profile({
+                    'user': {'name': 'Test User'},
+                    'preferences': {'interview': {'default_mode': 'express'}}
+                })
+
+                context = get_agent_context('interviewer')
+
+                assert 'express' in context.lower()
+                assert 'Test User' in context
+
+    def test_get_agent_context_presentation_builder(self, tmp_path):
+        """Should get presentation-specific context."""
+        from core.memory_integration import get_agent_context
+        from core.memory import save_user_profile
+
+        with patch('core.memory.USER_PROFILE_PATH', tmp_path / 'profile.yaml'):
+            with patch('core.memory.USER_PROFILE_DIR', tmp_path):
+                save_user_profile({
+                    'preferences': {
+                        'presentation': {
+                            'always_include_exec_summary': True,
+                            'default_slide_count_target': 12
+                        }
+                    }
+                })
+
+                context = get_agent_context('presentation-builder')
+
+                assert 'executive summary' in context.lower()
+                assert '12' in context
+
+    def test_get_agent_context_planner(self, tmp_path, monkeypatch):
+        """Should get planner-specific context with episodes."""
+        from core.memory_integration import get_agent_context
+        from core.memory import add_episode
+
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "project_state").mkdir()
+
+        add_episode("test_event", "Test summary for planner context")
+
+        context = get_agent_context('planner')
+
+        assert 'Recent project history' in context or 'test_event' in context
+
+    def test_apply_user_defaults_to_spec(self, tmp_path):
+        """Should apply user defaults to spec."""
+        from core.memory_integration import apply_user_defaults_to_spec
+        from core.memory import save_user_profile
+
+        with patch('core.memory.USER_PROFILE_PATH', tmp_path / 'profile.yaml'):
+            with patch('core.memory.USER_PROFILE_DIR', tmp_path):
+                save_user_profile({
+                    'preferences': {
+                        'chart': {'default_format': 'png', 'default_size': 'document'}
+                    },
+                    'defaults': {
+                        'visualization': {'insight_depth': 'detailed'},
+                        'branding': 'kearney'
+                    }
+                })
+
+                spec = {'meta': {'project_name': 'Test'}}
+                result = apply_user_defaults_to_spec(spec)
+
+                assert result['visualization']['format'] == 'png'
+                assert result['visualization']['insight_depth'] == 'detailed'
+
+    def test_apply_user_defaults_preserves_existing(self, tmp_path):
+        """Should not overwrite existing spec values."""
+        from core.memory_integration import apply_user_defaults_to_spec
+        from core.memory import save_user_profile
+
+        with patch('core.memory.USER_PROFILE_PATH', tmp_path / 'profile.yaml'):
+            with patch('core.memory.USER_PROFILE_DIR', tmp_path):
+                save_user_profile({
+                    'preferences': {
+                        'chart': {'default_format': 'png'}
+                    }
+                })
+
+                spec = {'visualization': {'format': 'svg'}}
+                result = apply_user_defaults_to_spec(spec)
+
+                # Should keep existing value
+                assert result['visualization']['format'] == 'svg'
+
+    def test_get_client_overrides(self, tmp_path):
+        """Should get client-specific overrides."""
+        from core.memory_integration import get_client_overrides
+        from core.memory import save_user_profile
+
+        with patch('core.memory.USER_PROFILE_PATH', tmp_path / 'profile.yaml'):
+            with patch('core.memory.USER_PROFILE_DIR', tmp_path):
+                save_user_profile({
+                    'client_overrides': {
+                        'Acme Corp': {
+                            'use_light_mode': True,
+                            'custom_disclaimer': 'Confidential'
+                        }
+                    }
+                })
+
+                overrides = get_client_overrides('Acme Corp')
+
+                assert overrides['use_light_mode'] == True
+                assert 'Confidential' in overrides['custom_disclaimer']
+
+    def test_get_client_overrides_case_insensitive(self, tmp_path):
+        """Should find client overrides case-insensitively."""
+        from core.memory_integration import get_client_overrides
+        from core.memory import save_user_profile
+
+        with patch('core.memory.USER_PROFILE_PATH', tmp_path / 'profile.yaml'):
+            with patch('core.memory.USER_PROFILE_DIR', tmp_path):
+                save_user_profile({
+                    'client_overrides': {
+                        'Acme Corp': {'setting': 'value'}
+                    }
+                })
+
+                # Should work with different casing
+                assert get_client_overrides('acme corp')['setting'] == 'value'
+                assert get_client_overrides('ACME CORP')['setting'] == 'value'
+
+    def test_get_client_overrides_not_found(self, tmp_path):
+        """Should return empty dict for unknown client."""
+        from core.memory_integration import get_client_overrides
+        from core.memory import save_user_profile
+
+        with patch('core.memory.USER_PROFILE_PATH', tmp_path / 'profile.yaml'):
+            with patch('core.memory.USER_PROFILE_DIR', tmp_path):
+                save_user_profile({
+                    'client_overrides': {
+                        'Acme Corp': {'setting': 'value'}
+                    }
+                })
+
+                overrides = get_client_overrides('Unknown Client')
+                assert overrides == {}
+
+    def test_update_session_after_task(self, tmp_path, monkeypatch):
+        """Should update session context after task completion."""
+        from core.memory_integration import update_session_after_task
+        from core.memory import get_session_context
+
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "project_state").mkdir()
+
+        update_session_after_task("1.1", "Test task", "Phase 1")
+
+        context = get_session_context()
+        assert context['current_phase'] == 'Phase 1'
+        assert '1.1' in context['last_task']
+        assert context['tasks_completed'] == 1

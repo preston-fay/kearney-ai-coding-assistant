@@ -546,6 +546,64 @@ def get_completion_percentage() -> float:
     return (done / len(state.tasks)) * 100
 
 
+def record_plan_episode(plan_content: str, task_count: int) -> str:
+    """
+    Record an episode when plan is generated.
+
+    Args:
+        plan_content: The plan markdown content
+        task_count: Number of tasks in the plan
+
+    Returns:
+        Episode filename
+    """
+    from core.memory import add_episode
+
+    # Extract phases from plan
+    phases = []
+    for line in plan_content.split('\n'):
+        if line.startswith('## Phase'):
+            phases.append(line.replace('## ', '').strip())
+
+    summary = f"Generated execution plan with {task_count} tasks across {len(phases)} phases."
+    if phases:
+        summary += "\n\nPhases:\n" + "\n".join(f"- {p}" for p in phases)
+
+    details = {
+        'task_count': task_count,
+        'phase_count': len(phases),
+        'phases': phases,
+    }
+
+    return add_episode(
+        event_type="plan_generated",
+        summary=summary,
+        details=details
+    )
+
+
+def record_phase_complete_episode(phase_name: str, tasks_completed: int) -> str:
+    """
+    Record an episode when a phase completes.
+
+    Args:
+        phase_name: Name of the completed phase
+        tasks_completed: Number of tasks completed in the phase
+
+    Returns:
+        Episode filename
+    """
+    from core.memory import add_episode
+
+    summary = f"Completed {phase_name} with {tasks_completed} tasks finished."
+
+    return add_episode(
+        event_type="phase_complete",
+        summary=summary,
+        details={'phase': phase_name, 'tasks_completed': tasks_completed}
+    )
+
+
 def main():
     """CLI entry point for state_manager."""
     import sys

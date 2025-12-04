@@ -815,3 +815,46 @@ def answers_to_spec_dict(
         spec[project_type] = type_specific
 
     return spec
+
+
+def record_interview_episode(spec: dict) -> str:
+    """
+    Record an episode when interview completes.
+
+    Args:
+        spec: The completed specification dict
+
+    Returns:
+        Episode filename
+    """
+    from core.memory import add_episode
+
+    project_name = spec.get('meta', {}).get('project_name', 'Unknown Project')
+    project_type = spec.get('meta', {}).get('project_type', 'unknown')
+    client = spec.get('meta', {}).get('client', '')
+
+    # Build summary
+    business_question = spec.get('problem', {}).get('business_question', '')
+    deliverables = spec.get('deliverables', [])
+
+    summary = f"Completed requirements gathering for '{project_name}'"
+    if client:
+        summary += f" (Client: {client})"
+    summary += f"\n\nProject type: {project_type}"
+    if business_question:
+        summary += f"\n\nBusiness question: {business_question}"
+    if deliverables:
+        summary += f"\n\nDeliverables:\n" + "\n".join(f"- {d}" for d in deliverables[:5])
+
+    details = {
+        'project_name': project_name,
+        'project_type': project_type,
+        'client': client,
+        'deliverable_count': len(deliverables),
+    }
+
+    return add_episode(
+        event_type="interview_complete",
+        summary=summary,
+        details=details
+    )
