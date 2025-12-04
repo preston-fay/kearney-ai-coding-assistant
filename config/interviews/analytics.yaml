@@ -242,6 +242,33 @@ sections:
         required: true
         condition: "has_visualizations == True"
 
+      - id: branding
+        prompt: |
+          What branding should be applied to visualizations?
+
+          1. Kearney branding (KDS compliant)
+          2. Client branding (use client design system)
+          3. Neutral (minimal branding)
+        type: choice
+        options: [kearney, client, neutral]
+        required: true
+        condition: "has_visualizations == True"
+
+      - id: design_system
+        prompt: |
+          Which design system should we use?
+
+          Enter the slug of an existing design system, or:
+          - "kearney" (default - purple theme)
+          - "new-from-url" to create from a client website
+          - "new-from-assets" to create from uploaded brand assets
+
+          Use /project:design-system list to see available systems.
+        type: text
+        required: false
+        default: "kearney"
+        condition: "branding == 'client'"
+
   - id: insights
     name: Insights & Narrative
     questions:

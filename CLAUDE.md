@@ -38,16 +38,78 @@ You MUST maintain state in project_state/ for project continuity.
 
 ## BRAND GUARDRAILS (Non-Negotiable)
 
-These rules are enforced programmatically by core/brand_guard.py:
+These rules are enforced programmatically by core/brand_guard.py and
+core/design_system/:
 
-1. **PRIMARY COLOR**: Kearney Purple (#7823DC) - all accents
-2. **FORBIDDEN COLORS**: Green (#00FF00, #2E7D32, etc.) - NEVER use
-3. **TYPOGRAPHY**: Inter font (Arial fallback) - weights 400/500/600
+1. **PRIMARY COLOR**: From active design system (Kearney: #7823DC)
+2. **FORBIDDEN COLORS**: Defined per design system (Kearney: no green)
+3. **TYPOGRAPHY**: From design system (Kearney: Inter, Arial fallback)
 4. **CHARTS**: No gridlines. Data labels outside bars/slices.
 5. **NO EMOJIS**: Never in any output
-6. **DARK MODE**: Default background #1E1E1E
+6. **DARK MODE**: Default background from design system (#1E1E1E)
+7. **ACCESSIBILITY**: WCAG 2.1 AA compliance enforced automatically
 
 Violations will be caught by hooks and blocked before commit.
+
+---
+
+## DESIGN SYSTEM MODULE
+
+The design system module provides centralized brand theming with WCAG 2.1 AA
+accessibility compliance. Supports multiple design systems while defaulting
+to Kearney branding.
+
+### Usage
+
+```python
+from core.design_system import (
+    load_design_system,    # Load a design system by slug
+    resolve_theme,         # Get KDSTheme from spec.yaml
+    list_design_systems,   # List available design systems
+    create_from_url,       # Create from client website
+    create_from_assets,    # Create from uploaded files
+)
+
+# Load Kearney design system
+ds = load_design_system("kearney")
+
+# Resolve theme from project spec (recommended for engines)
+theme = resolve_theme(spec_dict)
+
+# Create new design system from client website
+ds = create_from_url(
+    url="https://client.com",
+    slug="client-corp",
+    name="Client Corporation"
+)
+```
+
+### Design System Storage
+
+```
+config/brands/
+  kearney/              # Default (committed to repo)
+    brand.yaml          # Brand tokens
+  client-corp/          # Client brands (gitignored)
+    brand.yaml
+    logo_primary.png
+```
+
+### Setting Design System in spec.yaml
+
+```yaml
+# Option 1: In project section
+project:
+  design_system: "client-corp"
+
+# Option 2: In type-specific section
+webapp:
+  design_system: "client-corp"
+```
+
+### Available Commands
+
+Use `/project:design-system` to manage design systems interactively.
 
 ---
 
@@ -298,6 +360,7 @@ update_task_status(task_id='1.2', status='done')
 | /status | Show current project state |
 | /review | Run brand compliance check |
 | /export | Generate final deliverables |
+| /design-system | Manage design systems (list, create, delete) |
 | /help | Show this command list |
 | /compact | Summarize context to free up space |
 | /reset | Archive and start fresh |

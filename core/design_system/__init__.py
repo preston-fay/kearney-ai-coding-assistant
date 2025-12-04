@@ -45,6 +45,8 @@ from .manager import (
 from .applicator import (
     apply_design_system,
     resolve_theme,
+    resolve_design_system,
+    get_logo_for_context,
 )
 from .accessibility import (
     contrast_ratio,
@@ -73,6 +75,8 @@ __all__ = [
     # Applicator
     "apply_design_system",
     "resolve_theme",
+    "resolve_design_system",
+    "get_logo_for_context",
     # Accessibility
     "contrast_ratio",
     "ensure_contrast",

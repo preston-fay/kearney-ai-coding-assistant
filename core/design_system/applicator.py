@@ -142,18 +142,68 @@ def resolve_theme(spec: Optional[dict] = None) -> 'KDSTheme':
 
     spec = spec or {}
 
-    # Get design system slug from spec, default to Kearney
-    ds_slug = spec.get('project', {}).get('design_system', get_default())
+    # Get project type from meta section
+    project_type = spec.get('meta', {}).get('project_type', 'webapp')
+
+    # Look for design_system in multiple locations:
+    # 1. project.design_system (explicit setting)
+    # 2. {project_type}.design_system (from interview)
+    # 3. constraints.design_system (legacy)
+    # 4. Default to Kearney
+    ds_slug = None
+
+    if spec.get('project', {}).get('design_system'):
+        ds_slug = spec['project']['design_system']
+    elif spec.get(project_type, {}).get('design_system'):
+        ds_slug = spec[project_type]['design_system']
+    elif spec.get('constraints', {}).get('design_system'):
+        ds_slug = spec['constraints']['design_system']
+    else:
+        ds_slug = get_default()
 
     # Load the design system
     ds = load_design_system(ds_slug)
 
-    # Determine context and mode from spec
-    project_type = spec.get('project', {}).get('type', 'webapp')
+    # Determine dark mode from presentation settings
     dark_mode = spec.get('presentation', {}).get('dark_mode', True)
 
     # Apply with accessibility enforcement
     return apply_design_system(ds, context=project_type, dark_mode=dark_mode)
+
+
+def resolve_design_system(spec: Optional[dict] = None) -> DesignSystem:
+    """
+    Resolve DesignSystem from project spec.
+
+    Use this when you need the full DesignSystem (including logos),
+    not just the KDSTheme.
+
+    Args:
+        spec: Project specification dict (from spec.yaml).
+
+    Returns:
+        DesignSystem instance.
+    """
+    from .manager import load_design_system, get_default
+
+    spec = spec or {}
+
+    # Get project type from meta section
+    project_type = spec.get('meta', {}).get('project_type', 'webapp')
+
+    # Look for design_system in multiple locations
+    ds_slug = None
+
+    if spec.get('project', {}).get('design_system'):
+        ds_slug = spec['project']['design_system']
+    elif spec.get(project_type, {}).get('design_system'):
+        ds_slug = spec[project_type]['design_system']
+    elif spec.get('constraints', {}).get('design_system'):
+        ds_slug = spec['constraints']['design_system']
+    else:
+        ds_slug = get_default()
+
+    return load_design_system(ds_slug)
 
 
 def get_logo_for_context(ds: DesignSystem, context: str) -> Optional[dict]:
