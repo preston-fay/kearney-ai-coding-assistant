@@ -150,6 +150,15 @@ from core.plan_updater import (
     update_plan_from_diff,
 )
 
+# Telemetry (v3.3)
+from core.telemetry import (
+    Telemetry,
+    Event,
+    EventType,
+    Metrics,
+    TelemetryTimer,
+)
+
 __all__ = [
     # Brand Guard
     "check_file",
@@ -260,4 +269,10 @@ __all__ = [
     "PlanUpdateResult",
     "TaskUpdate",
     "update_plan_from_diff",
+    # Telemetry (v3.3)
+    "Telemetry",
+    "Event",
+    "EventType",
+    "Metrics",
+    "TelemetryTimer",
 ]
