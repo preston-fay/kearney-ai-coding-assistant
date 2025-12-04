@@ -1,0 +1,45 @@
+# Spec Template: Executive Summary
+# Pre-configured for C-suite presentation decks
+
+_template:
+  name: "Executive Summary"
+  description: "Concise executive presentation with key findings and recommendations"
+  base_type: "presentation"
+  version: "1.0.0"
+
+meta:
+  project_name: ""  # REQUIRED
+  project_type: "presentation"
+  client: ""  # REQUIRED
+
+problem:
+  business_question: ""  # REQUIRED - user must provide
+  success_criteria:
+    - "Clear articulation of the situation"
+    - "Data-backed key findings"
+    - "Actionable recommendations"
+
+type_specific:
+  presentation_type: "executive_summary"
+  slide_count_target: 12
+  include_appendix: true
+  story_arc: "situation-findings-recommendations"
+
+data:
+  sources: []  # User provides
+
+deliverables:
+  - "Executive summary deck (10-15 slides)"
+  - "Appendix with supporting analysis"
+
+visualization:
+  format: "svg"
+  size: "presentation"
+  include_insights: true
+  insight_depth: "headlines"
+  branding: "kearney"
+
+defaults_applied:
+  audience_level: "executive"
+
+notes: ""
