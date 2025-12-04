@@ -124,6 +124,14 @@ from core.insight_engine import (
     InsightEngine,
 )
 
+# Action Titles (v3.2)
+from core.action_titles import (
+    is_weak_title,
+    transform_to_action_title,
+    suggest_action_titles,
+    validate_action_title,
+)
+
 __all__ = [
     # Brand Guard
     "check_file",
@@ -217,4 +225,9 @@ __all__ = [
     "Evidence",
     "InsightCatalog",
     "InsightEngine",
+    # Action Titles (v3.2)
+    "is_weak_title",
+    "transform_to_action_title",
+    "suggest_action_titles",
+    "validate_action_title",
 ]

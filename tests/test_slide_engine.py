@@ -364,3 +364,161 @@ class TestFontSettings:
         assert pres.title_font == "Inter"
         assert pres.body_font == "Inter"
         assert pres.fallback_font == "Arial"
+
+
+class TestSlideEngineInsightIntegration:
+    """Tests for insight-to-slide integration."""
+
+    def test_add_insight_slide_with_chart(self, tmp_path):
+        """Should add chart slide from insight data."""
+        from PIL import Image
+
+        # Create a dummy chart file
+        chart_path = tmp_path / "chart.png"
+        img = Image.new('RGB', (100, 100), color='purple')
+        img.save(chart_path)
+
+        pres = KDSPresentation()
+        pres.add_insight_slide({
+            'headline': 'Test Insight',
+            'supporting_text': 'This is the supporting text for the insight.',
+            'chart_path': str(chart_path),
+            'suggested_slide_type': 'comparison',
+        })
+
+        output = tmp_path / "output.pptx"
+        pres.save(str(output))
+
+        assert output.exists()
+        assert pres.slide_count == 1
+
+    def test_add_insight_slide_without_chart(self, tmp_path):
+        """Should add content slide when no chart."""
+        pres = KDSPresentation()
+        pres.add_insight_slide({
+            'headline': 'Text-Only Insight',
+            'supporting_text': 'This insight has no chart, just text content.',
+        })
+
+        output = tmp_path / "output.pptx"
+        pres.save(str(output))
+
+        assert output.exists()
+        assert pres.slide_count == 1
+
+    def test_add_insight_slide_missing_chart_falls_back(self, tmp_path):
+        """Should fall back to content slide if chart path doesn't exist."""
+        pres = KDSPresentation()
+        pres.add_insight_slide({
+            'headline': 'Missing Chart Insight',
+            'supporting_text': 'The chart file does not exist.',
+            'chart_path': '/nonexistent/chart.png',
+        })
+
+        output = tmp_path / "output.pptx"
+        pres.save(str(output))
+
+        assert output.exists()
+        assert pres.slide_count == 1
+
+    def test_build_from_insights_catalog(self, tmp_path):
+        """Should build presentation from insight catalog."""
+        from core.insight_engine import InsightEngine
+
+        # Create a catalog
+        engine = InsightEngine()
+        insights = [
+            engine.create_insight("Key Finding", "Important finding.", severity="key", category="finding"),
+            engine.create_insight("Implication", "What this means.", category="implication"),
+            engine.create_insight("Recommendation", "What to do.", category="recommendation"),
+        ]
+        catalog = engine.build_catalog(insights, "What drives performance?")
+
+        catalog_path = tmp_path / "insights.yaml"
+        catalog.save(str(catalog_path))
+
+        # Build presentation
+        pres = KDSPresentation()
+        slides_added = pres.build_from_insights(str(catalog_path))
+
+        assert slides_added >= 4  # Title + at least 3 content slides
+
+        output = tmp_path / "output.pptx"
+        pres.save(str(output))
+        assert output.exists()
+
+    def test_build_from_insights_without_title(self, tmp_path):
+        """Should build without title slide when disabled."""
+        from core.insight_engine import InsightEngine
+
+        engine = InsightEngine()
+        insights = [
+            engine.create_insight("Finding", "Text.", severity="key", category="finding"),
+        ]
+        catalog = engine.build_catalog(insights, "Question?")
+
+        catalog_path = tmp_path / "insights.yaml"
+        catalog.save(str(catalog_path))
+
+        pres = KDSPresentation()
+        slides_added = pres.build_from_insights(
+            str(catalog_path),
+            include_title=False
+        )
+
+        # Should not include title slide
+        assert slides_added >= 2  # Section + content
+
+    def test_build_from_insights_without_sections(self, tmp_path):
+        """Should build without section slides when disabled."""
+        from core.insight_engine import InsightEngine
+
+        engine = InsightEngine()
+        insights = [
+            engine.create_insight("Finding", "Text.", severity="key", category="finding"),
+        ]
+        catalog = engine.build_catalog(insights, "Question?")
+
+        catalog_path = tmp_path / "insights.yaml"
+        catalog.save(str(catalog_path))
+
+        pres = KDSPresentation()
+        slides_added = pres.build_from_insights(
+            str(catalog_path),
+            include_sections=False
+        )
+
+        # Should have title + content only (no section dividers)
+        assert slides_added == 2  # Title + 1 content
+
+    def test_build_from_insights_respects_max_slides(self, tmp_path):
+        """Should respect max_slides limit."""
+        from core.insight_engine import InsightEngine
+
+        engine = InsightEngine()
+        insights = [
+            engine.create_insight(f"Finding {i}", "Text.", severity="key", category="finding")
+            for i in range(10)
+        ]
+        catalog = engine.build_catalog(insights, "Question?")
+
+        catalog_path = tmp_path / "insights.yaml"
+        catalog.save(str(catalog_path))
+
+        pres = KDSPresentation()
+        slides_added = pres.build_from_insights(
+            str(catalog_path),
+            max_slides=5
+        )
+
+        assert slides_added <= 5
+
+    def test_add_insight_slide_method_chains(self, tmp_path):
+        """Should support method chaining for add_insight_slide."""
+        pres = KDSPresentation()
+        result = pres.add_insight_slide({
+            'headline': 'Test',
+            'supporting_text': 'Text'
+        })
+
+        assert result is pres  # Method chaining

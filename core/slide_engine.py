@@ -22,7 +22,7 @@ Brand Rules Enforced:
 
 import logging
 from pathlib import Path
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union, Dict, Any
 
 try:
     from pptx import Presentation
@@ -650,6 +650,165 @@ class KDSPresentation:
         self._slide_count += 1
         logger.debug(f"Added closing slide: {title}")
         return self
+
+    def add_insight_slide(self, insight_data: Dict[str, Any]) -> "KDSPresentation":
+        """
+        Add a slide from an insight specification.
+
+        Args:
+            insight_data: Dict with keys:
+                - headline: Action title for the slide
+                - supporting_text: Body text or bullet points
+                - evidence: List of evidence dicts (optional)
+                - suggested_slide_type: "comparison", "trend", "content", etc.
+                - chart_path: Path to chart image (optional)
+
+        Returns:
+            self for method chaining.
+        """
+        headline = insight_data.get('headline', 'Insight')
+        supporting_text = insight_data.get('supporting_text', '')
+        chart_path = insight_data.get('chart_path')
+        slide_type = insight_data.get('suggested_slide_type', 'content')
+
+        # If we have a chart, use chart slide
+        if chart_path and Path(chart_path).exists():
+            self.add_chart_slide(
+                title=headline,
+                chart_path=chart_path,
+                caption=supporting_text[:200] if len(supporting_text) > 200 else supporting_text
+            )
+        else:
+            # Use content slide with supporting text as bullet
+            self.add_content_slide(
+                title=headline,
+                bullet_points=[supporting_text] if supporting_text else []
+            )
+
+        return self
+
+    def build_from_insights(
+        self,
+        catalog_path: str,
+        include_title: bool = True,
+        include_sections: bool = True,
+        max_slides: int = 20,
+    ) -> int:
+        """
+        Build presentation from an insight catalog.
+
+        Args:
+            catalog_path: Path to insights.yaml file
+            include_title: Whether to add title slide
+            include_sections: Whether to add section dividers
+            max_slides: Maximum number of content slides
+
+        Returns:
+            Number of slides added
+        """
+        from core.insight_engine import InsightCatalog
+
+        catalog = InsightCatalog.load(catalog_path)
+        slides_added = 0
+
+        # Title slide
+        if include_title:
+            # Extract title from business question
+            title = "Analysis Results"
+            if catalog.business_question:
+                # Try to make a title from the question
+                q = catalog.business_question
+                if q.lower().startswith("what"):
+                    title = q.replace("?", "").strip()
+                else:
+                    title = f"Analysis: {q[:50]}"
+
+            self.add_title_slide(title=title, subtitle=f"Generated {catalog.generated_at[:10]}")
+            slides_added += 1
+
+        arc = catalog.narrative_arc
+
+        # Key Findings section
+        key_findings = arc.get('key_findings', [])
+        if key_findings and slides_added < max_slides:
+            if include_sections:
+                self.add_section_slide("Key Findings", section_number=1)
+                slides_added += 1
+
+            for insight_id in key_findings:
+                if slides_added >= max_slides:
+                    break
+                insight = next((i for i in catalog.insights if i.id == insight_id), None)
+                if insight:
+                    self._add_insight_as_slide(insight)
+                    slides_added += 1
+
+        # Supporting findings (limit to 3)
+        supporting = arc.get('supporting_findings', [])
+        if supporting and slides_added < max_slides:
+            if include_sections and key_findings:
+                self.add_section_slide("Additional Findings", section_number=2)
+                slides_added += 1
+
+            for insight_id in supporting[:3]:
+                if slides_added >= max_slides:
+                    break
+                insight = next((i for i in catalog.insights if i.id == insight_id), None)
+                if insight:
+                    self._add_insight_as_slide(insight)
+                    slides_added += 1
+
+        # Implications
+        implications = arc.get('implications', [])
+        if implications and slides_added < max_slides:
+            if include_sections:
+                self.add_section_slide("Implications", section_number=3)
+                slides_added += 1
+
+            for insight_id in implications:
+                if slides_added >= max_slides:
+                    break
+                insight = next((i for i in catalog.insights if i.id == insight_id), None)
+                if insight:
+                    self._add_insight_as_slide(insight)
+                    slides_added += 1
+
+        # Recommendations
+        recommendations = arc.get('recommendations', [])
+        if recommendations and slides_added < max_slides:
+            if include_sections:
+                self.add_section_slide("Recommendations", section_number=4)
+                slides_added += 1
+
+            for insight_id in recommendations:
+                if slides_added >= max_slides:
+                    break
+                insight = next((i for i in catalog.insights if i.id == insight_id), None)
+                if insight:
+                    self._add_insight_as_slide(insight)
+                    slides_added += 1
+
+        return slides_added
+
+    def _add_insight_as_slide(self, insight) -> None:
+        """Add a single insight as a slide."""
+        # Check for chart evidence
+        chart_evidence = next(
+            (e for e in insight.evidence if e.type == "chart"),
+            None
+        )
+
+        if chart_evidence and chart_evidence.reference and Path(chart_evidence.reference).exists():
+            self.add_chart_slide(
+                title=insight.headline,
+                chart_path=chart_evidence.reference,
+                caption=insight.supporting_text[:200]
+            )
+        else:
+            self.add_content_slide(
+                title=insight.headline,
+                bullet_points=[insight.supporting_text]
+            )
 
     @property
     def slide_count(self) -> int:
