@@ -1,0 +1,139 @@
+# .github/workflows/smoke_test.yml
+name: Smoke Test
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Test core imports
+        run: |
+          python -c "
+          from core import (
+              KDSChart, KDSPresentation, KDSDocument, KDSSpreadsheet,
+              KDSWebApp, KDSTheme, KDSData,
+              InsightEngine, Insight, Evidence, InsightCatalog,
+              is_weak_title, transform_to_action_title,
+              compute_diff, assess_plan_impact,
+              PlanUpdater, update_plan_from_diff,
+              check_file, check_directory,
+              profile_dataset
+          )
+          print('All core imports successful!')
+          "
+
+      - name: Test chart generation
+        run: |
+          python -c "
+          from core import KDSChart
+          import tempfile
+          import os
+
+          chart = KDSChart()
+          chart.bar([10, 20, 30], ['A', 'B', 'C'], 'Test Chart')
+
+          with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
+              chart.save(f.name)
+              assert os.path.exists(f.name), 'Chart file not created'
+              print(f'Chart saved: {os.path.getsize(f.name)} bytes')
+              os.unlink(f.name)
+
+          print('Chart generation: OK')
+          "
+
+      - name: Test presentation generation
+        run: |
+          python -c "
+          from core import KDSPresentation
+          import tempfile
+          import os
+
+          pres = KDSPresentation()
+          pres.add_title_slide('Test Presentation', 'Smoke Test')
+          pres.add_content_slide('Key Findings', ['Finding 1', 'Finding 2'])
+
+          with tempfile.NamedTemporaryFile(suffix='.pptx', delete=False) as f:
+              pres.save(f.name)
+              assert os.path.exists(f.name), 'PPTX file not created'
+              print(f'Presentation saved: {os.path.getsize(f.name)} bytes')
+              os.unlink(f.name)
+
+          print('Presentation generation: OK')
+          "
+
+      - name: Test insight engine
+        run: |
+          python -c "
+          from core import InsightEngine
+
+          engine = InsightEngine()
+          insight = engine.extract_comparison_insight(
+              'Revenue',
+              {'North': 150, 'South': 100, 'East': 50}
+          )
+
+          assert insight.headline, 'No headline generated'
+          assert 'North' in insight.headline, 'Leader not identified'
+          print(f'Insight headline: {insight.headline}')
+          print('Insight engine: OK')
+          "
+
+      - name: Test spec diff
+        run: |
+          python -c "
+          from core import compute_diff
+
+          old = {'meta': {'version': 1}, 'data': {'sources': []}}
+          new = {'meta': {'version': 2}, 'data': {'sources': [{'path': 'data.csv'}]}}
+
+          diff = compute_diff(old, new)
+          assert diff.has_changes(), 'Should detect changes'
+          print(f'Detected {len(diff.changes)} changes')
+          print('Spec diff: OK')
+          "
+
+      - name: Test brand guard
+        run: |
+          python -c "
+          from core import check_file
+          import tempfile
+
+          # Test with compliant content
+          with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+              f.write('color = \"#7823DC\"  # Kearney Purple')
+              f.flush()
+              violations = check_file(f.name)
+              assert len(violations) == 0, f'Unexpected violations: {violations}'
+
+          print('Brand guard: OK')
+          "
+
+      - name: Smoke test summary
+        run: |
+          echo "=========================================="
+          echo "        SMOKE TEST PASSED"
+          echo "=========================================="
+          echo "All core modules operational:"
+          echo "  - Chart generation"
+          echo "  - Presentation generation"
+          echo "  - Insight engine"
+          echo "  - Spec diff"
+          echo "  - Brand guard"
+          echo "=========================================="

@@ -72,9 +72,13 @@ ENV/
 # Testing
 .pytest_cache/
 .coverage
+coverage.xml
 .tox/
 htmlcov/
 .hypothesis/
+
+# Linting
+.ruff_cache/
 
 # ============================================================
 # IDES AND EDITORS
