@@ -192,3 +192,136 @@ def copy_logo_to_brand(slug: str, source_path: Path, logo_key: str = "primary") 
     shutil.copy2(source_path, dest_path)
 
     return str(dest_path.relative_to(BRANDS_DIR.parent.parent))
+
+
+def create_from_url(
+    url: str,
+    slug: str,
+    name: str,
+    mode: str = "conservative"
+) -> DesignSystem:
+    """
+    Create a design system from website extraction.
+
+    Extracts brand tokens (colors, fonts, logo) from a website and
+    creates a new design system.
+
+    Args:
+        url: Website URL to extract from.
+        slug: Slug for the new design system (e.g., "acme-corp").
+        name: Display name for the brand (e.g., "Acme Corporation").
+        mode: Extraction mode ("conservative" or "moderate").
+
+    Returns:
+        The created DesignSystem.
+    """
+    from .extractor import extract_from_url
+    from .schema import (
+        DesignSystem,
+        Meta,
+        ColorPalette,
+        Typography,
+        FontFamily,
+        Logo,
+    )
+
+    # Extract brand tokens from URL
+    data = extract_from_url(url, mode)
+
+    # Build color palette
+    colors = data.get('colors', [])
+    primary = colors[0] if colors else "#7823DC"  # Fallback to Kearney purple
+    secondary = colors[1] if len(colors) > 1 else None
+    accent = colors[2] if len(colors) > 2 else None
+    chart_palette = colors[:6] if colors else [primary]
+
+    # Build typography
+    fonts = data.get('fonts', [])
+    primary_font = fonts[0] if fonts else "Inter"
+    body_font = fonts[1] if len(fonts) > 1 else primary_font
+
+    typography = Typography(
+        heading=FontFamily(
+            family=primary_font,
+            fallback="Arial, sans-serif",
+            weights=[400, 500, 600],
+        ),
+        body=FontFamily(
+            family=body_font,
+            fallback="Arial, sans-serif",
+            weights=[400, 500],
+        ),
+        monospace=FontFamily(
+            family="Courier New",
+            fallback="monospace",
+            weights=[400],
+        ),
+    )
+
+    # Build logos (if found)
+    logos = {}
+    logo_url = data.get('logo_url')
+    if logo_url:
+        logos['primary'] = Logo(
+            path=logo_url,  # External URL for now
+            placement=['webapp_header', 'dashboard_header'],
+        )
+
+    # Create the design system
+    ds = DesignSystem(
+        meta=Meta(
+            name=name,
+            slug=slug,
+            version="1.0.0",
+            source_url=url,
+            extraction_mode=mode,
+        ),
+        colors=ColorPalette(
+            primary=primary,
+            secondary=secondary,
+            accent=accent,
+            chart_palette=chart_palette,
+            # Inherit Kearney's forbidden colors (no green)
+            forbidden=[
+                "#00FF00",
+                "#008000",
+                "#4CAF50",
+                "#2E7D32",
+            ],
+        ),
+        typography=typography,
+        spacing={'base': 8},
+        borders={'radius': '4px', 'width': '1px'},
+        backgrounds={'dark': '#1E1E1E', 'light': '#FFFFFF'},
+        text={'on_dark': '#FFFFFF', 'on_light': '#333333'},
+        logos=logos,
+        extraction_metadata=data.get('metadata'),
+    )
+
+    # Save and return
+    save_design_system(ds)
+    return ds
+
+
+def slugify(name: str) -> str:
+    """
+    Convert a name to a valid slug.
+
+    Args:
+        name: Brand name (e.g., "Acme Corporation").
+
+    Returns:
+        Slug (e.g., "acme-corporation").
+    """
+    import re
+    # Convert to lowercase
+    slug = name.lower()
+    # Replace spaces and underscores with hyphens
+    slug = re.sub(r'[\s_]+', '-', slug)
+    # Remove non-alphanumeric characters except hyphens
+    slug = re.sub(r'[^a-z0-9-]', '', slug)
+    # Remove multiple consecutive hyphens
+    slug = re.sub(r'-+', '-', slug)
+    # Remove leading/trailing hyphens
+    slug = slug.strip('-')
+    return slug or 'unnamed-brand'
