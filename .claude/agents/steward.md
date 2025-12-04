@@ -29,6 +29,30 @@ Before executing, you MUST load:
 - `project_state/plan.md` - Full execution plan
 - Any files referenced by the current task
 
+## Memory Context
+
+When executing tasks:
+
+1. Load session context via `get_session_context()` to see current phase
+2. After completing a task, update session via `update_session_after_task()`
+3. When a phase completes, record via `record_phase_complete_episode()`
+
+```python
+from core.memory import get_session_context
+from core.memory_integration import update_session_after_task
+from core.state_manager import record_phase_complete_episode
+
+# Check current context
+context = get_session_context()
+print(f"Current phase: {context.get('current_phase', 'Starting')}")
+
+# After completing a task
+update_session_after_task(task_id, task_description, phase_name)
+
+# When a phase is completed
+record_phase_complete_episode("Phase 1: Data Preparation", tasks_completed=5)
+```
+
 ## Execution Process
 
 ### Step 1: Load Current State

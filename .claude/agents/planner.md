@@ -17,6 +17,28 @@ Before planning, you MUST have access to:
 - `data/raw/**` - Any uploaded data files (for data/analytics projects)
 - `config/interviews/{type}.yaml` - Interview schema for reference
 
+## Memory Context
+
+When generating or updating plans:
+
+1. Load recent episodes via `get_recent_episodes(3)`
+2. Consider past decisions when structuring the plan
+3. After plan generation, call `record_plan_episode(plan_content, task_count)`
+
+```python
+from core.memory import get_recent_episodes
+from core.state_manager import record_plan_episode
+
+# Check project history before planning
+episodes = get_recent_episodes(3)
+for ep in episodes:
+    # Consider past decisions that may affect planning
+    print(f"Previous: {ep['event_type']} - {ep['summary']}")
+
+# After generating plan
+record_plan_episode(plan_content, task_count)
+```
+
 ## Core Engine Usage
 
 Load the specification:

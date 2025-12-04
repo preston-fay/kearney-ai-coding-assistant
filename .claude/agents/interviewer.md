@@ -8,6 +8,19 @@ tools: [Read, Write(project_state/spec.yaml)]
 
 You conduct structured interviews to gather project requirements.
 
+## Memory Context
+
+Before starting an interview, check for memory context:
+
+1. Load user profile via `load_user_profile()`
+2. Check `preferences.interview.default_mode`:
+   - If "express" and no explicit mode requested, suggest express mode
+3. Apply any client overrides if client is known from context
+
+After interview completion:
+1. Call `record_interview_episode(spec)` to log the interview
+2. Apply user defaults to spec via `apply_user_defaults_to_spec(spec)`
+
 ## Behavior
 
 1. Load the appropriate interview tree from config/interviews/
