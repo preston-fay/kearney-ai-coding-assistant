@@ -11,11 +11,53 @@ Conduct a structured interview to gather project requirements and generate spec.
 ## Usage
 
 ```
-/project:interview                    # Start new interview
-/project:interview --type modeling    # Start with specific type
-/project:interview --section data     # Re-interview specific section
-/project:interview --continue         # Continue interrupted interview
+/project:interview                           # Start full interview
+/project:interview --express                 # Express mode (6-10 questions)
+/project:interview --template=<name>         # Start from a pre-filled template
+/project:interview --type modeling           # Start with specific type
+/project:interview --section data            # Re-interview specific section
+/project:interview --continue                # Continue interrupted interview
 ```
+
+## Express Mode
+
+Express mode is designed for experienced users who want to get started quickly. It asks only the essential questions needed to begin execution:
+
+- Project name and client
+- Core business question/objective
+- Data sources
+- Primary deliverable format
+- Audience level
+
+All other settings use smart defaults. The spec will be marked with `confidence: assumed` for sections that weren't explicitly asked, allowing @planner to fill gaps as needed.
+
+**Available for all 8 project types:**
+- analytics, presentation, dashboard, modeling
+- proposal, research, data_engineering, webapp
+
+**Example:**
+```
+/project:interview --express
+```
+
+## Templates
+
+Templates are pre-filled specifications for common project types. They include sensible defaults for deliverables, visualization settings, and success criteria.
+
+**Available templates:**
+
+| Template | Type | Description |
+|----------|------|-------------|
+| `quarterly_kpi_review` | analytics | Quarterly performance review with KPI dashboard |
+| `executive_summary` | presentation | C-suite presentation with findings and recommendations |
+| `competitive_analysis` | research | Competitive landscape analysis with benchmarking |
+
+**Example:**
+```
+/project:interview --template=quarterly_kpi_review
+```
+
+When using a template, the interview will only ask questions for fields that aren't pre-filled (typically just project name, client, and data sources).
 
 ## Behavior
 

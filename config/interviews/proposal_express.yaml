@@ -1,0 +1,66 @@
+# Interview Tree: Proposal (Express)
+# Streamlined interview for experienced users
+# 7 essential questions that block execution if missing
+
+id: proposal_express
+name: Proposal (Express)
+version: "1.0.0"
+express: true
+
+defaults:
+  # Smart defaults for questions not asked
+  branding: kearney
+  deadline: asap
+  include_pricing: false
+  include_timeline: true
+  include_team_bios: false
+  tone: professional
+  format: document
+
+sections:
+  - id: essentials
+    name: Project Essentials
+    questions:
+      - id: project_name
+        prompt: What is the project name?
+        type: text
+        required: true
+
+      - id: client
+        prompt: Who is the client or stakeholder?
+        type: text
+        required: true
+
+      - id: proposal_type
+        prompt: What type of proposal is this?
+        type: choice
+        options:
+          - rfp_response
+          - pitch
+          - project_proposal
+          - budget_request
+        required: true
+
+      - id: objective
+        prompt: What are you proposing and why?
+        type: text
+        required: true
+
+      - id: audience_level
+        prompt: Who is the primary audience?
+        type: choice
+        options:
+          - executive
+          - manager
+          - technical
+        required: true
+
+      - id: key_sections
+        prompt: What sections must be included?
+        type: list
+        required: false
+
+      - id: page_limit
+        prompt: Any page or length constraints?
+        type: number
+        required: false

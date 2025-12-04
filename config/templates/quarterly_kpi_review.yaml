@@ -1,0 +1,46 @@
+# Spec Template: Quarterly KPI Review
+# Pre-configured for recurring quarterly business reviews
+
+_template:
+  name: "Quarterly KPI Review"
+  description: "Standard quarterly performance review with KPI dashboard and executive summary"
+  base_type: "analytics"  # Use analytics_express for delta questions
+  version: "1.0.0"
+
+meta:
+  project_name: ""  # REQUIRED - user must provide
+  project_type: "analytics"
+  client: ""  # REQUIRED - user must provide
+
+problem:
+  business_question: "How did we perform this quarter against targets, and what actions should we take?"
+  success_criteria:
+    - "Clear view of KPI performance vs targets"
+    - "Identification of top 3 wins and top 3 concerns"
+    - "Actionable recommendations for next quarter"
+
+type_specific:
+  analysis_type: "comparative"
+  time_period: "Last quarter"
+  granularity: "monthly"
+
+data:
+  sources: []  # REQUIRED - user must provide
+
+deliverables:
+  - "Executive summary presentation (10-15 slides)"
+  - "KPI dashboard (interactive HTML)"
+  - "Detailed metrics appendix"
+
+visualization:
+  format: "svg"
+  size: "presentation"
+  include_insights: true
+  insight_depth: "brief"
+  branding: "kearney"
+
+defaults_applied:
+  audience_level: "executive"
+  reproducibility: "regular"
+
+notes: ""

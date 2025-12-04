@@ -1,0 +1,75 @@
+# Interview Tree: Data Engineering (Express)
+# Streamlined interview for experienced users
+# 8 essential questions that block execution if missing
+
+id: data_engineering_express
+name: Data Engineering (Express)
+version: "1.0.0"
+express: true
+
+defaults:
+  # Smart defaults for questions not asked
+  branding: kearney
+  deadline: asap
+  error_handling: log_and_continue
+  logging_level: info
+  documentation: inline
+  testing: basic
+
+sections:
+  - id: essentials
+    name: Project Essentials
+    questions:
+      - id: project_name
+        prompt: What is the project name?
+        type: text
+        required: true
+
+      - id: client
+        prompt: Who is the client or stakeholder?
+        type: text
+        required: true
+
+      - id: objective
+        prompt: What data problem are you solving?
+        type: text
+        required: true
+
+      - id: pipeline_type
+        prompt: What type of data work is this?
+        type: choice
+        options:
+          - etl
+          - data_integration
+          - data_quality
+          - migration
+          - automation
+        required: true
+
+      - id: source_systems
+        prompt: What source systems or files?
+        type: list
+        required: true
+
+      - id: target_destination
+        prompt: Where does the data need to go?
+        type: text
+        required: false
+
+      - id: frequency
+        prompt: How often does this need to run?
+        type: choice
+        options:
+          - one_time
+          - daily
+          - weekly
+          - real_time
+        required: true
+
+      - id: audience_level
+        prompt: Who reviews the output?
+        type: choice
+        options:
+          - technical
+          - manager
+        required: true

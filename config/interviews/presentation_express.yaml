@@ -1,0 +1,68 @@
+# Interview Tree: Presentation (Express)
+# Streamlined interview for experienced users
+# 8 essential questions that block execution if missing
+
+id: presentation_express
+name: Presentation (Express)
+version: "1.0.0"
+express: true
+
+defaults:
+  # Smart defaults for questions not asked
+  branding: kearney
+  deadline: asap
+  visual_style: kearney_standard
+  include_sources: true
+  include_page_numbers: true
+  font_size: standard
+
+sections:
+  - id: essentials
+    name: Project Essentials
+    questions:
+      - id: project_name
+        prompt: What is the project name?
+        type: text
+        required: true
+
+      - id: client
+        prompt: Who is the client or stakeholder?
+        type: text
+        required: true
+
+      - id: presentation_purpose
+        prompt: What is the key message or decision this deck supports?
+        type: text
+        required: true
+
+      - id: audience_level
+        prompt: Who is the primary audience?
+        type: choice
+        options:
+          - executive
+          - manager
+          - analyst
+          - technical
+        required: true
+
+      - id: slide_count_target
+        prompt: Approximately how many slides?
+        type: number
+        required: false
+        default: 15
+
+      - id: data_sources
+        prompt: What data or analysis will feed into this deck?
+        type: list
+        required: false
+
+      - id: key_sections
+        prompt: What sections or topics must be covered?
+        type: list
+        required: false
+
+      - id: include_appendix
+        prompt: Include detailed appendix?
+        type: boolean
+        required: false
+        default: false

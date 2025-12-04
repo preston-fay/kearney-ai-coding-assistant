@@ -299,3 +299,194 @@ class TestGetColors:
         # With intelligent_colors=True (default), colors don't cycle
         # All colors should be valid hex codes
         assert all(c.startswith('#') and len(c) == 7 for c in colors)
+
+
+class TestNewChartTypes:
+    """Tests for new chart types in KDSChart v2."""
+
+    def test_waterfall_creates_figure(self, tmp_path):
+        """Waterfall chart should create a figure."""
+        from core.chart_engine import KDSChart
+        chart = KDSChart()
+        chart.waterfall(
+            data=[100, 20, -15, 125],
+            labels=['Start', 'Add', 'Sub', 'End'],
+            title='Test Waterfall'
+        )
+        output = tmp_path / "waterfall.png"
+        chart.save(str(output))
+        assert output.exists()
+
+    def test_waterfall_method_chaining(self):
+        """Waterfall chart should support method chaining."""
+        chart = KDSChart()
+        result = chart.waterfall(
+            data=[100, 20, -15, 125],
+            labels=['Start', 'Add', 'Sub', 'End']
+        )
+        assert result is chart
+
+    def test_stacked_bar_creates_figure(self, tmp_path):
+        """Stacked bar chart should create a figure."""
+        from core.chart_engine import KDSChart
+        chart = KDSChart()
+        chart.stacked_bar(
+            data={'A': [10, 20], 'B': [15, 25]},
+            labels=['X', 'Y'],
+            title='Test Stacked'
+        )
+        output = tmp_path / "stacked.png"
+        chart.save(str(output))
+        assert output.exists()
+
+    def test_stacked_bar_horizontal(self, tmp_path):
+        """Stacked bar chart should support horizontal orientation."""
+        chart = KDSChart()
+        chart.stacked_bar(
+            data={'A': [10, 20], 'B': [15, 25]},
+            labels=['X', 'Y'],
+            horizontal=True
+        )
+        output = tmp_path / "stacked_h.png"
+        chart.save(str(output))
+        assert output.exists()
+
+    def test_combo_creates_figure(self, tmp_path):
+        """Combo chart should create a figure."""
+        from core.chart_engine import KDSChart
+        chart = KDSChart()
+        chart.combo(
+            bar_data=[100, 120],
+            line_data=[10, 12],
+            labels=['A', 'B'],
+            title='Test Combo'
+        )
+        output = tmp_path / "combo.png"
+        chart.save(str(output))
+        assert output.exists()
+
+    def test_combo_with_labels(self, tmp_path):
+        """Combo chart should support series labels."""
+        chart = KDSChart()
+        chart.combo(
+            bar_data=[100, 120, 140],
+            line_data=[10, 12, 11],
+            labels=['Q1', 'Q2', 'Q3'],
+            bar_label='Revenue',
+            line_label='Margin',
+            bar_ylabel='$ Millions',
+            line_ylabel='%'
+        )
+        output = tmp_path / "combo_labels.png"
+        chart.save(str(output))
+        assert output.exists()
+
+    def test_bullet_creates_figure(self, tmp_path):
+        """Bullet chart should create a figure."""
+        from core.chart_engine import KDSChart
+        chart = KDSChart()
+        chart.bullet(
+            actual=85,
+            target=100,
+            ranges=[50, 75, 100],
+            title='Test Bullet'
+        )
+        output = tmp_path / "bullet.png"
+        chart.save(str(output))
+        assert output.exists()
+
+    def test_bullet_vertical(self, tmp_path):
+        """Bullet chart should support vertical orientation."""
+        chart = KDSChart()
+        chart.bullet(
+            actual=85,
+            target=100,
+            ranges=[50, 75, 100],
+            horizontal=False
+        )
+        output = tmp_path / "bullet_v.png"
+        chart.save(str(output))
+        assert output.exists()
+
+    def test_histogram_creates_figure(self, tmp_path):
+        """Histogram should create a figure."""
+        from core.chart_engine import KDSChart
+        chart = KDSChart()
+        chart.histogram(
+            data=[1, 2, 2, 3, 3, 3, 4, 4, 5],
+            bins=5,
+            title='Test Histogram'
+        )
+        output = tmp_path / "histogram.png"
+        chart.save(str(output))
+        assert output.exists()
+
+    def test_histogram_with_custom_bins(self, tmp_path):
+        """Histogram should support custom bin edges."""
+        chart = KDSChart()
+        chart.histogram(
+            data=[1, 2, 2, 3, 3, 3, 4, 4, 5],
+            bins=[0, 2, 4, 6],
+            xlabel='Value',
+            show_values=True
+        )
+        output = tmp_path / "histogram_custom.png"
+        chart.save(str(output))
+        assert output.exists()
+
+
+class TestChartRecommendation:
+    """Tests for chart type recommendation."""
+
+    def test_bridge_recommends_waterfall(self):
+        """Bridge story should recommend waterfall."""
+        from core.chart_engine import recommend_chart_type
+        assert recommend_chart_type("bridge") == "waterfall"
+
+    def test_distribution_recommends_histogram(self):
+        """Distribution story should recommend histogram."""
+        from core.chart_engine import recommend_chart_type
+        assert recommend_chart_type("distribution") == "histogram"
+
+    def test_performance_recommends_bullet(self):
+        """Performance story should recommend bullet."""
+        from core.chart_engine import recommend_chart_type
+        assert recommend_chart_type("performance") == "bullet"
+
+    def test_dual_metric_recommends_combo(self):
+        """Dual metric story should recommend combo."""
+        from core.chart_engine import recommend_chart_type
+        assert recommend_chart_type("dual_metric") == "combo"
+
+    def test_comparison_with_series_recommends_grouped(self):
+        """Comparison with multiple series should recommend grouped_bar."""
+        from core.chart_engine import recommend_chart_type
+        result = recommend_chart_type("comparison", {"series": 3})
+        assert result == "grouped_bar"
+
+    def test_part_to_whole_with_many_categories_recommends_stacked(self):
+        """Part to whole with many categories should recommend stacked_bar."""
+        from core.chart_engine import recommend_chart_type
+        result = recommend_chart_type("part_to_whole", {"categories": 10})
+        assert result == "stacked_bar"
+
+    def test_unknown_story_defaults_to_bar(self):
+        """Unknown story should default to bar chart."""
+        from core.chart_engine import recommend_chart_type
+        assert recommend_chart_type("unknown_story") == "bar"
+
+    def test_comparison_single_series_recommends_bar(self):
+        """Comparison with single series should recommend bar."""
+        from core.chart_engine import recommend_chart_type
+        result = recommend_chart_type("comparison", {"series": 1})
+        assert result == "bar"
+
+    def test_change_over_time_recommends_line(self):
+        """Change over time should recommend line chart."""
+        from core.chart_engine import recommend_chart_type
+        assert recommend_chart_type("change_over_time") == "line"
+
+    def test_correlation_recommends_scatter(self):
+        """Correlation should recommend scatter plot."""
+        from core.chart_engine import recommend_chart_type
+        assert recommend_chart_type("correlation") == "scatter"

@@ -30,6 +30,9 @@ from core.interview_engine import (
     get_answers_summary,
     answers_to_spec_dict,
     PROJECT_TYPES,
+    express_interview_exists,
+    list_available_templates,
+    load_spec_template,
 )
 
 
@@ -570,3 +573,234 @@ class TestListAvailableTrees:
             trees = list_available_trees()
             assert 'modeling' in trees
             assert 'presentation' in trees
+
+    def test_list_excludes_express_files(self, tmp_path):
+        """Express interview files should not appear in the main tree list."""
+        (tmp_path / 'modeling.yaml').write_text('id: modeling')
+        (tmp_path / 'modeling_express.yaml').write_text('id: modeling_express')
+
+        with patch.object(interview_engine, 'INTERVIEWS_DIR', tmp_path):
+            trees = list_available_trees()
+            assert 'modeling' in trees
+            assert 'modeling_express' not in trees
+
+
+class TestExpressMode:
+    """Tests for express interview functionality."""
+
+    def test_express_interview_exists_true(self):
+        """Express files we created should be detected."""
+        # All 8 types should have express interviews now
+        for project_type in ['analytics', 'presentation', 'dashboard', 'modeling',
+                            'proposal', 'research', 'data_engineering', 'webapp']:
+            assert express_interview_exists(project_type), f"Express should exist for {project_type}"
+
+    def test_express_interview_exists_false(self):
+        """Non-existent types should return False."""
+        assert not express_interview_exists('nonexistent_type')
+        assert not express_interview_exists('')
+
+    def test_express_interview_exists_with_mock(self, tmp_path):
+        """Test express detection with mocked directory."""
+        (tmp_path / 'analytics_express.yaml').write_text('id: analytics_express')
+
+        with patch.object(interview_engine, 'INTERVIEWS_DIR', tmp_path):
+            assert express_interview_exists('analytics')
+            assert not express_interview_exists('modeling')
+
+    def test_load_express_interview(self):
+        """Loading with express=True should load express version."""
+        tree = load_interview_tree('analytics', express=True)
+        assert tree is not None
+        assert tree.id == 'analytics_express'
+
+    def test_load_express_interview_has_express_marker(self):
+        """Express interviews should be identifiable."""
+        tree = load_interview_tree('analytics', express=True)
+        # The tree ID should indicate it's an express version
+        assert 'express' in tree.id.lower()
+
+    def test_express_has_fewer_questions(self):
+        """Express interviews should have fewer questions than full."""
+        for project_type in ['analytics', 'presentation', 'dashboard']:
+            full_tree = load_interview_tree(project_type, express=False)
+            express_tree = load_interview_tree(project_type, express=True)
+
+            full_count = sum(len(s.questions) for s in full_tree.sections)
+            express_count = sum(len(s.questions) for s in express_tree.sections)
+
+            assert express_count < full_count, f"Express {project_type} should have fewer questions"
+            assert express_count <= 10, f"Express {project_type} should have max 10 questions"
+
+    def test_express_has_minimum_questions(self):
+        """Express interviews should have at least 6 questions."""
+        for project_type in ['analytics', 'presentation', 'dashboard', 'modeling',
+                            'proposal', 'research', 'data_engineering', 'webapp']:
+            express_tree = load_interview_tree(project_type, express=True)
+            express_count = sum(len(s.questions) for s in express_tree.sections)
+            assert express_count >= 6, f"Express {project_type} should have at least 6 questions"
+
+    def test_express_fallback_when_missing(self, tmp_path, caplog):
+        """When express file missing, should fall back to full with warning."""
+        import logging
+
+        # Create only a full interview, no express version
+        full_content = """
+id: test_type
+name: Test Type
+version: "1.0.0"
+sections:
+  - id: basics
+    name: Basics
+    questions:
+      - id: q1
+        prompt: Question 1?
+        type: text
+"""
+        (tmp_path / 'test_type.yaml').write_text(full_content)
+
+        with patch.object(interview_engine, 'INTERVIEWS_DIR', tmp_path):
+            with caplog.at_level(logging.WARNING):
+                tree = load_interview_tree('test_type', express=True)
+
+            # Should fall back to full interview
+            assert tree is not None
+            assert tree.id == 'test_type'
+            # Should have logged a warning
+            assert 'falling back' in caplog.text.lower() or 'not found' in caplog.text.lower()
+
+    def test_express_false_loads_full(self):
+        """Loading with express=False should load full version."""
+        tree = load_interview_tree('analytics', express=False)
+        assert tree is not None
+        assert tree.id == 'analytics'
+        assert 'express' not in tree.id.lower()
+
+
+class TestTemplates:
+    """Tests for spec template functionality."""
+
+    def test_list_available_templates(self):
+        """Should return all created templates."""
+        templates = list_available_templates()
+        assert 'quarterly_kpi_review' in templates
+        assert 'executive_summary' in templates
+        assert 'competitive_analysis' in templates
+        assert len(templates) >= 3
+
+    def test_list_available_templates_sorted(self):
+        """Template list should be sorted alphabetically."""
+        templates = list_available_templates()
+        assert templates == sorted(templates)
+
+    def test_load_spec_template_success(self):
+        """Should successfully load each template."""
+        for template_name in ['quarterly_kpi_review', 'executive_summary', 'competitive_analysis']:
+            template = load_spec_template(template_name)
+            assert template is not None
+            assert '_template' in template
+
+    def test_template_has_required_metadata(self):
+        """Templates must have _template section with required fields."""
+        for template_name in ['quarterly_kpi_review', 'executive_summary', 'competitive_analysis']:
+            template = load_spec_template(template_name)
+            meta = template.get('_template', {})
+            assert 'name' in meta, f"{template_name} missing _template.name"
+            assert 'base_type' in meta, f"{template_name} missing _template.base_type"
+            assert 'description' in meta, f"{template_name} missing _template.description"
+
+    def test_template_base_types_are_valid(self):
+        """Template base_types should reference valid project types."""
+        valid_types = [t[0] for t in PROJECT_TYPES]
+        for template_name in ['quarterly_kpi_review', 'executive_summary', 'competitive_analysis']:
+            template = load_spec_template(template_name)
+            base_type = template['_template']['base_type']
+            assert base_type in valid_types, f"{template_name} has invalid base_type: {base_type}"
+
+    def test_template_has_required_sections(self):
+        """Templates must have standard spec sections."""
+        for template_name in ['quarterly_kpi_review', 'executive_summary', 'competitive_analysis']:
+            template = load_spec_template(template_name)
+            assert 'meta' in template, f"{template_name} missing meta section"
+            assert 'problem' in template, f"{template_name} missing problem section"
+            assert 'deliverables' in template, f"{template_name} missing deliverables section"
+
+    def test_template_meta_has_project_type(self):
+        """Template meta section should have project_type."""
+        for template_name in ['quarterly_kpi_review', 'executive_summary', 'competitive_analysis']:
+            template = load_spec_template(template_name)
+            assert 'project_type' in template['meta'], f"{template_name} missing meta.project_type"
+
+    def test_load_nonexistent_template_returns_none(self):
+        """Loading non-existent template should return None."""
+        result = load_spec_template('nonexistent_template')
+        assert result is None
+
+    def test_load_template_without_metadata_returns_none(self, tmp_path):
+        """Loading a YAML file without _template section should return None."""
+        # Create a YAML file without _template section
+        (tmp_path / 'no_meta.yaml').write_text('meta:\n  project_name: test')
+
+        with patch.object(interview_engine, 'TEMPLATES_DIR', tmp_path):
+            result = load_spec_template('no_meta')
+            assert result is None
+
+    def test_list_templates_excludes_non_template_files(self, tmp_path):
+        """list_available_templates should only return files with _template metadata."""
+        # Create one valid template and one non-template file
+        (tmp_path / 'valid.yaml').write_text('_template:\n  name: Valid\n  base_type: analytics\n  description: Test')
+        (tmp_path / 'invalid.yaml').write_text('meta:\n  project_name: test')
+
+        with patch.object(interview_engine, 'TEMPLATES_DIR', tmp_path):
+            templates = list_available_templates()
+            assert 'valid' in templates
+            assert 'invalid' not in templates
+
+
+class TestExpressMenuIndicator:
+    """Tests for express mode indicator in menu."""
+
+    def test_menu_shows_express_indicator(self):
+        """Menu should show [EXPRESS] for types with express interviews."""
+        menu = get_project_type_menu(show_express_indicator=True)
+        # Since all types now have express interviews, menu should contain [EXPRESS] markers
+        assert '[EXPRESS]' in menu
+
+    def test_menu_shows_express_legend(self):
+        """Menu should include legend explaining EXPRESS indicator."""
+        menu = get_project_type_menu(show_express_indicator=True)
+        assert 'EXPRESS' in menu
+        assert 'shorter interview' in menu.lower() or 'express mode' in menu.lower()
+
+    def test_menu_hides_express_when_disabled(self):
+        """Menu should not show [EXPRESS] when show_express_indicator=False."""
+        menu = get_project_type_menu(show_express_indicator=False)
+        assert '[EXPRESS]' not in menu
+
+    def test_menu_shows_all_types_with_express(self):
+        """All 8 project types should show [EXPRESS] indicator."""
+        menu = get_project_type_menu(show_express_indicator=True)
+        # Count [EXPRESS] occurrences in numbered menu lines only (exclude legend)
+        lines = menu.split('\n')
+        numbered_lines_with_express = [l for l in lines if l.strip() and l.strip()[0].isdigit() and '[EXPRESS]' in l]
+        assert len(numbered_lines_with_express) == 8, f"Expected 8 project types with [EXPRESS], found {len(numbered_lines_with_express)}"
+
+    def test_menu_express_indicator_with_mock(self, tmp_path):
+        """Test that only types with express files get the indicator."""
+        # Create only one express file
+        (tmp_path / 'analytics.yaml').write_text('id: analytics')
+        (tmp_path / 'analytics_express.yaml').write_text('id: analytics_express')
+        (tmp_path / 'modeling.yaml').write_text('id: modeling')
+        # No modeling_express.yaml
+
+        with patch.object(interview_engine, 'INTERVIEWS_DIR', tmp_path):
+            menu = get_project_type_menu(show_express_indicator=True)
+            # Analytics line should have [EXPRESS]
+            lines = menu.split('\n')
+            analytics_line = [l for l in lines if 'Analytics' in l]
+            modeling_line = [l for l in lines if 'Model' in l]
+
+            if analytics_line:
+                assert '[EXPRESS]' in analytics_line[0]
+            if modeling_line:
+                assert '[EXPRESS]' not in modeling_line[0]

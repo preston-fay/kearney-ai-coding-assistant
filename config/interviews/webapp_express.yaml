@@ -1,0 +1,78 @@
+# Interview Tree: Web Application (Express)
+# Streamlined interview for experienced users
+# 8 essential questions that block execution if missing
+
+id: webapp_express
+name: Web Application (Express)
+version: "1.0.0"
+express: true
+
+defaults:
+  # Smart defaults for questions not asked
+  branding: kearney
+  deadline: asap
+  responsive: true
+  accessibility: basic
+  browser_support: modern
+  error_handling: user_friendly
+
+sections:
+  - id: essentials
+    name: Project Essentials
+    questions:
+      - id: project_name
+        prompt: What is the project name?
+        type: text
+        required: true
+
+      - id: client
+        prompt: Who is the client or stakeholder?
+        type: text
+        required: true
+
+      - id: app_purpose
+        prompt: What will users do with this application?
+        type: text
+        required: true
+
+      - id: audience_level
+        prompt: Who is the primary audience?
+        type: choice
+        options:
+          - executive
+          - manager
+          - analyst
+          - technical
+        required: true
+
+      - id: app_type
+        prompt: What type of application is this?
+        type: choice
+        options:
+          - calculator
+          - form
+          - dashboard
+          - data_tool
+          - prototype
+        required: true
+
+      - id: data_sources
+        prompt: What data does it need?
+        type: list
+        required: false
+
+      - id: deployment_target
+        prompt: Where will this be deployed?
+        type: choice
+        options:
+          - html_file
+          - streamlit
+          - react
+        required: false
+        default: html_file
+
+      - id: auth_required
+        prompt: Does it need user authentication?
+        type: boolean
+        required: false
+        default: false

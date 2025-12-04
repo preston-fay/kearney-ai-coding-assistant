@@ -346,12 +346,71 @@ update_task_status(task_id='1.2', status='done')
 
 ---
 
+## MEMORY SYSTEM
+
+KACA has a persistent memory system that remembers user preferences and project
+context across sessions.
+
+### User Profile (~/.kaca/profile.yaml)
+
+Stores user preferences that apply across all projects:
+- **Interview preferences**: Express vs full mode
+- **Chart preferences**: Default format, size, source attribution
+- **Presentation preferences**: Slide count target, closing style
+- **Document preferences**: Methodology appendix
+- **Client overrides**: Per-client settings
+
+Use `/profile` to view and manage your profile.
+
+### Project Episodes (project_state/episodes/)
+
+Automatically records significant project events:
+- Interview completion with requirements summary
+- Plan generation with task counts
+- Phase completion with progress
+
+These episodes are used to:
+- Provide context when resuming sessions
+- Inform agents about recent decisions
+- Track project history
+
+### Memory Context Injection
+
+Agents automatically receive relevant context from memory:
+- @interviewer: User's interview mode preference
+- @planner: Recent project episodes
+- @steward: Current phase, last completed task
+- @presentation-builder: Slide count target, closing preference
+
+This context is injected as `<memory_context>` at the start of agent prompts.
+
+### Memory Functions
+
+```python
+from core.memory import (
+    load_user_profile,
+    save_user_profile,
+    get_user_preference,
+    add_episode,
+    get_recent_episodes,
+    build_memory_context,
+)
+
+from core.memory_integration import (
+    get_agent_context,
+    apply_user_defaults_to_spec,
+    update_session_after_task,
+)
+```
+
+---
+
 ## AVAILABLE COMMANDS
 
 | Command | Purpose |
 |---------|---------|
 | /init | Initialize new project from template |
-| /interview | Gather requirements via structured interview |
+| /interview | Gather requirements (`--express` for faster 6-10 questions, `--template=<name>` for pre-filled specs) |
 | /edit | Edit specific parts of specification |
 | /spec | View current specification |
 | /history | View specification version history |
@@ -361,6 +420,7 @@ update_task_status(task_id='1.2', status='done')
 | /review | Run brand compliance check |
 | /export | Generate final deliverables |
 | /design-system | Manage design systems (list, create, delete) |
+| /profile | View and manage user preferences |
 | /help | Show this command list |
 | /compact | Summarize context to free up space |
 | /reset | Archive and start fresh |

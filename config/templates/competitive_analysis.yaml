@@ -1,0 +1,54 @@
+# Spec Template: Competitive Analysis
+# Pre-configured for competitive landscape research
+
+_template:
+  name: "Competitive Analysis"
+  description: "Structured competitive landscape analysis with benchmarking"
+  base_type: "research"
+  version: "1.0.0"
+
+meta:
+  project_name: ""  # REQUIRED
+  project_type: "research"
+  client: ""  # REQUIRED
+
+problem:
+  business_question: "How do we compare to competitors and where are the opportunities?"
+  success_criteria:
+    - "Clear competitive positioning map"
+    - "Strengths and weaknesses vs top 3-5 competitors"
+    - "Identified gaps and opportunities"
+
+type_specific:
+  research_type: "competitive_analysis"
+  depth: "standard"
+  competitors: []  # REQUIRED - user must provide list
+  dimensions:
+    - "Product/Service offering"
+    - "Pricing"
+    - "Market positioning"
+    - "Strengths/Weaknesses"
+
+data:
+  sources:
+    - "Public filings and reports"
+    - "Company websites"
+    - "Industry analyst reports"
+    - "News and press releases"
+
+deliverables:
+  - "Competitive landscape presentation"
+  - "Competitor profile summaries"
+  - "Positioning matrix visualization"
+
+visualization:
+  format: "svg"
+  size: "presentation"
+  include_insights: true
+  insight_depth: "brief"
+  branding: "kearney"
+
+defaults_applied:
+  audience_level: "executive"
+
+notes: ""

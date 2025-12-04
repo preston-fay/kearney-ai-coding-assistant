@@ -169,6 +169,28 @@ Interactive web applications and tools.
 | `/webapp` | Generate web dashboard |
 | `/init` | Initialize new project (rarely needed) |
 
+### Express Mode and Templates
+
+For faster project setup, use express mode or templates:
+
+**Express Mode** - Streamlined interview with only 6-10 essential questions:
+```
+/interview --express
+```
+
+**Templates** - Start from a pre-filled specification:
+```
+/interview --template=quarterly_kpi_review
+```
+
+| Template | Type | Best For |
+|----------|------|----------|
+| `quarterly_kpi_review` | analytics | Recurring quarterly business reviews |
+| `executive_summary` | presentation | C-suite presentations |
+| `competitive_analysis` | research | Competitive landscape research |
+
+Templates only ask for project name, client, and data sources - everything else is pre-configured.
+
 ---
 
 ## Working with Data
@@ -326,6 +348,65 @@ Fallback: Arial, Helvetica, sans-serif
 - Data labels outside bars/slices
 - Legend below chart
 - Kearney Purple as primary color
+
+---
+
+## Memory & Preferences
+
+KACA maintains a user profile and project history to personalize your experience.
+
+### User Profile
+
+Your preferences are stored in `~/.kaca/profile.yaml` and apply across all projects.
+
+**View your profile:**
+```
+/profile
+```
+
+**Set preferences:**
+```
+/profile set user.name Alex
+/profile set preferences.interview.default_mode express
+/profile set preferences.chart.default_format png
+```
+
+### Available Preferences
+
+| Path | Values | Description |
+|------|--------|-------------|
+| `user.name` | text | Your name (shown in context) |
+| `preferences.interview.default_mode` | full, express | Interview length preference |
+| `preferences.chart.default_format` | svg, png | Default chart format |
+| `preferences.chart.default_size` | presentation, document | Chart sizing |
+| `preferences.presentation.always_include_exec_summary` | true, false | Auto-add exec summary |
+| `preferences.presentation.default_slide_count_target` | number | Target slide count |
+
+### Express Mode
+
+If you set `preferences.interview.default_mode` to `express`, future interviews will automatically use the shorter 6-10 question format.
+
+### Project History (Episodes)
+
+KACA records significant project events in `project_state/episodes/`:
+- Interview completions
+- Plan generations
+- Phase completions
+
+These help KACA provide context-aware suggestions across sessions.
+
+### Client Overrides
+
+Store client-specific preferences in your profile:
+
+```yaml
+client_overrides:
+  "Acme Corp":
+    use_light_mode: true
+    custom_disclaimer: "Confidential - Acme Corp"
+```
+
+When working on an Acme Corp project, these settings will be applied automatically.
 
 ---
 

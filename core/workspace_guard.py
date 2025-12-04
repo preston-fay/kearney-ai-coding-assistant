@@ -125,3 +125,28 @@ def require_project_workspace():
             return func(*args, **kwargs)
         return wrapper
     return decorator
+
+
+def validate_write(path: str) -> bool:
+    """
+    Validate that a write operation is within project boundaries.
+
+    Used by hooks to prevent writes outside the project.
+
+    Args:
+        path: Path being written to
+
+    Returns:
+        True if write is allowed, False otherwise
+    """
+    target = Path(path).resolve()
+    cwd = Path.cwd().resolve()
+
+    # Allow writes within project directory
+    try:
+        target.relative_to(cwd)
+        return True
+    except ValueError:
+        # Path is outside project
+        print(f"Write blocked: {path} is outside project directory")
+        return False

@@ -95,6 +95,27 @@ from core.design_system import (
     ensure_contrast,
 )
 
+# Memory System (v3.1)
+from core.memory import (
+    load_user_profile,
+    save_user_profile,
+    get_user_preference,
+    update_user_preference,
+    add_episode,
+    get_recent_episodes,
+    build_memory_context,
+    update_session_context,
+    get_session_context,
+)
+
+# Memory Integration (v3.1)
+from core.memory_integration import (
+    get_agent_context,
+    update_session_after_task,
+    apply_user_defaults_to_spec,
+    get_client_overrides,
+)
+
 __all__ = [
     # Brand Guard
     "check_file",
@@ -168,4 +189,19 @@ __all__ = [
     "apply_design_system",
     "contrast_ratio",
     "ensure_contrast",
+    # Memory System (v3.1)
+    "load_user_profile",
+    "save_user_profile",
+    "get_user_preference",
+    "update_user_preference",
+    "add_episode",
+    "get_recent_episodes",
+    "build_memory_context",
+    "update_session_context",
+    "get_session_context",
+    # Memory Integration (v3.1)
+    "get_agent_context",
+    "update_session_after_task",
+    "apply_user_defaults_to_spec",
+    "get_client_overrides",
 ]
