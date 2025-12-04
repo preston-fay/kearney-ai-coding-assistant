@@ -36,19 +36,18 @@
   },
 
   "hooks": {
-    "PostToolUse:Write": [
+    "PostToolUse": [
       {
-        "matcher": "outputs/**",
-        "command": "python core/hook_runner.py post-edit $file"
-      },
-      {
-        "matcher": "exports/**",
-        "command": "python core/hook_runner.py post-edit $file"
+        "matcher": "Write|Edit|MultiEdit",
+        "command": "python -m core.hook_runner brand_check \"$FILEPATH\"",
+        "timeout": 10000
       }
     ],
-    "PreCommit": [
+    "Stop": [
       {
-        "command": "python core/hook_runner.py pre-commit"
+        "matcher": ".*",
+        "command": "python -m core.hook_runner session_end",
+        "timeout": 5000
       }
     ]
   }
