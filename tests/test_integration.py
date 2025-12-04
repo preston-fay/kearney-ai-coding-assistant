@@ -36,7 +36,7 @@ from core.state_validator import (
     restore_from_archive,
     list_archives,
 )
-from core.data_handler import ProjectDatabase, register_all_raw_files
+from core.data_handler import ProjectDatabase, register_all_raw_files, DUCKDB_AVAILABLE
 from core.brand_guard import check_file, check_text_content, BrandViolation
 from core.brand_config import (
     load_brand_config,
@@ -281,6 +281,7 @@ class TestEndToEndWorkflow:
         assert not spec_file_exists(project_path)
 
 
+@pytest.mark.skipif(not DUCKDB_AVAILABLE, reason="duckdb not installed")
 class TestDataHandlerIntegration:
     """Test data handler integration with project workflow."""
 

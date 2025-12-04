@@ -8,6 +8,7 @@ from core.design_system.extractor import (
     _extract_fonts_from_text,
     HEX_PATTERN,
     RGB_PATTERN,
+    HAS_WEB_DEPS,
 )
 
 
@@ -119,11 +120,11 @@ class TestRgbPattern:
 
 
 # Integration tests would require mocking requests
+@pytest.mark.skipif(not HAS_WEB_DEPS, reason="beautifulsoup4/requests not installed")
 class TestExtractFromUrl:
     """Test URL extraction (mocked)."""
 
     @patch('core.design_system.extractor.requests')
-    @patch('core.design_system.extractor.HAS_WEB_DEPS', True)
     def test_extract_conservative_mode(self, mock_requests):
         """Should extract in conservative mode."""
         from core.design_system.extractor import extract_from_url
