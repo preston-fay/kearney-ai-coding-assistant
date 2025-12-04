@@ -80,6 +80,17 @@ class KDSTheme:
         "#333333",  # Dark gray
     )
 
+    # Forbidden Colors (NO GREEN - enforced by brand_guard.py)
+    forbidden_colors: Tuple[str, ...] = (
+        "#00FF00",
+        "#008000",
+        "#4CAF50",
+        "#2E7D32",
+        "#228B22",
+        "#32CD32",
+        "#90EE90",
+    )
+
     # Typography
     font_family: str = "Inter, Arial, sans-serif"
     font_weight_normal: int = 400

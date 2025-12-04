@@ -3,5 +3,6 @@
 
 # Keep Kearney (default) and documentation
 !kearney/
+!kearney/**
 !README.md
 !.gitignore

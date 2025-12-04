@@ -15,9 +15,10 @@ Modules:
     hook_runner: Cross-platform hook dispatcher
     interview_engine: Interview orchestration for requirements gathering
     spec_manager: Specification CRUD with versioning
+    design_system: Multi-brand theming with WCAG accessibility
 """
 
-__version__ = "2.0.0"
+__version__ = "3.0.0"
 __author__ = "Kearney Digital & Analytics"
 
 from core.brand_guard import check_file, check_directory, BrandViolation
@@ -80,6 +81,18 @@ from core.workspace_guard import (
     verify_workspace,
     get_workspace_info,
     require_project_workspace,
+)
+
+# Design System Module (v3.0)
+from core.design_system import (
+    DesignSystem,
+    load_design_system,
+    save_design_system,
+    list_design_systems,
+    resolve_theme,
+    apply_design_system,
+    contrast_ratio,
+    ensure_contrast,
 )
 
 __all__ = [
@@ -146,4 +159,13 @@ __all__ = [
     "verify_workspace",
     "get_workspace_info",
     "require_project_workspace",
+    # Design System Module (v3.0)
+    "DesignSystem",
+    "load_design_system",
+    "save_design_system",
+    "list_design_systems",
+    "resolve_theme",
+    "apply_design_system",
+    "contrast_ratio",
+    "ensure_contrast",
 ]

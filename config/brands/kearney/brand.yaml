@@ -1,0 +1,61 @@
+meta:
+  name: "Kearney"
+  slug: "kearney"
+  version: "1.0.0"
+
+colors:
+  primary: "#7823DC"
+  secondary: "#5C1BA8"
+  accent: "#9B4DCA"
+  semantic:
+    success: "#D4A5FF"      # Light purple, NOT green
+    warning: "#FFB74D"
+    error: "#FF6F61"
+    info: "#64B5F6"
+  chart_palette:
+    - "#7823DC"
+    - "#9B4DCA"
+    - "#5C1BA8"
+    - "#B266FF"
+    - "#4A148C"
+    - "#CE93D8"
+  forbidden:
+    - "#00FF00"             # No green ever
+    - "#008000"
+    - "#4CAF50"
+    - "#2E7D32"
+    - "#228B22"
+    - "#32CD32"
+    - "#90EE90"
+
+typography:
+  heading:
+    family: "Inter"
+    fallback: "Arial, sans-serif"
+    weights: [400, 500, 600]
+  body:
+    family: "Inter"
+    fallback: "Arial, sans-serif"
+    weights: [400, 500]
+  monospace:
+    family: "Courier New"
+    fallback: "monospace"
+    weights: [400]
+
+spacing:
+  base: 8
+
+borders:
+  radius: "4px"
+  width: "1px"
+
+backgrounds:
+  dark: "#1E1E1E"
+  light: "#FFFFFF"
+
+text:
+  on_dark: "#FFFFFF"
+  on_light: "#333333"
+
+# No logos defined for Kearney default
+logos: {}
