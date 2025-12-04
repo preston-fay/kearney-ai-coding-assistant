@@ -22,7 +22,7 @@ Brand Rules Enforced:
 
 import logging
 from pathlib import Path
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union, Dict, Any
 
 try:
     from pptx import Presentation
@@ -30,8 +30,12 @@ try:
     from pptx.dml.color import RGBColor
     from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
     from pptx.enum.shapes import MSO_SHAPE
+    from pptx.chart.data import CategoryChartData
+    from pptx.enum.chart import XL_CHART_TYPE
 except ImportError:
     Presentation = None  # type: ignore
+    CategoryChartData = None  # type: ignore
+    XL_CHART_TYPE = None  # type: ignore
 
 logger = logging.getLogger(__name__)
 
@@ -649,6 +653,484 @@ class KDSPresentation:
 
         self._slide_count += 1
         logger.debug(f"Added closing slide: {title}")
+        return self
+
+    def add_insight_slide(self, insight_data: Dict[str, Any]) -> "KDSPresentation":
+        """
+        Add a slide from an insight specification.
+
+        Args:
+            insight_data: Dict with keys:
+                - headline: Action title for the slide
+                - supporting_text: Body text or bullet points
+                - evidence: List of evidence dicts (optional)
+                - suggested_slide_type: "comparison", "trend", "content", etc.
+                - chart_path: Path to chart image (optional)
+
+        Returns:
+            self for method chaining.
+        """
+        headline = insight_data.get('headline', 'Insight')
+        supporting_text = insight_data.get('supporting_text', '')
+        chart_path = insight_data.get('chart_path')
+        slide_type = insight_data.get('suggested_slide_type', 'content')
+
+        # If we have a chart, use chart slide
+        if chart_path and Path(chart_path).exists():
+            self.add_chart_slide(
+                title=headline,
+                chart_path=chart_path,
+                caption=supporting_text[:200] if len(supporting_text) > 200 else supporting_text
+            )
+        else:
+            # Use content slide with supporting text as bullet
+            self.add_content_slide(
+                title=headline,
+                bullet_points=[supporting_text] if supporting_text else []
+            )
+
+        return self
+
+    def build_from_insights(
+        self,
+        catalog_path: str,
+        include_title: bool = True,
+        include_sections: bool = True,
+        max_slides: int = 20,
+    ) -> int:
+        """
+        Build presentation from an insight catalog.
+
+        Args:
+            catalog_path: Path to insights.yaml file
+            include_title: Whether to add title slide
+            include_sections: Whether to add section dividers
+            max_slides: Maximum number of content slides
+
+        Returns:
+            Number of slides added
+        """
+        from core.insight_engine import InsightCatalog
+
+        catalog = InsightCatalog.load(catalog_path)
+        slides_added = 0
+
+        # Title slide
+        if include_title:
+            # Extract title from business question
+            title = "Analysis Results"
+            if catalog.business_question:
+                # Try to make a title from the question
+                q = catalog.business_question
+                if q.lower().startswith("what"):
+                    title = q.replace("?", "").strip()
+                else:
+                    title = f"Analysis: {q[:50]}"
+
+            self.add_title_slide(title=title, subtitle=f"Generated {catalog.generated_at[:10]}")
+            slides_added += 1
+
+        arc = catalog.narrative_arc
+
+        # Key Findings section
+        key_findings = arc.get('key_findings', [])
+        if key_findings and slides_added < max_slides:
+            if include_sections:
+                self.add_section_slide("Key Findings", section_number=1)
+                slides_added += 1
+
+            for insight_id in key_findings:
+                if slides_added >= max_slides:
+                    break
+                insight = next((i for i in catalog.insights if i.id == insight_id), None)
+                if insight:
+                    self._add_insight_as_slide(insight)
+                    slides_added += 1
+
+        # Supporting findings (limit to 3)
+        supporting = arc.get('supporting_findings', [])
+        if supporting and slides_added < max_slides:
+            if include_sections and key_findings:
+                self.add_section_slide("Additional Findings", section_number=2)
+                slides_added += 1
+
+            for insight_id in supporting[:3]:
+                if slides_added >= max_slides:
+                    break
+                insight = next((i for i in catalog.insights if i.id == insight_id), None)
+                if insight:
+                    self._add_insight_as_slide(insight)
+                    slides_added += 1
+
+        # Implications
+        implications = arc.get('implications', [])
+        if implications and slides_added < max_slides:
+            if include_sections:
+                self.add_section_slide("Implications", section_number=3)
+                slides_added += 1
+
+            for insight_id in implications:
+                if slides_added >= max_slides:
+                    break
+                insight = next((i for i in catalog.insights if i.id == insight_id), None)
+                if insight:
+                    self._add_insight_as_slide(insight)
+                    slides_added += 1
+
+        # Recommendations
+        recommendations = arc.get('recommendations', [])
+        if recommendations and slides_added < max_slides:
+            if include_sections:
+                self.add_section_slide("Recommendations", section_number=4)
+                slides_added += 1
+
+            for insight_id in recommendations:
+                if slides_added >= max_slides:
+                    break
+                insight = next((i for i in catalog.insights if i.id == insight_id), None)
+                if insight:
+                    self._add_insight_as_slide(insight)
+                    slides_added += 1
+
+        return slides_added
+
+    def _add_insight_as_slide(self, insight) -> None:
+        """Add a single insight as a slide."""
+        # Check for chart evidence
+        chart_evidence = next(
+            (e for e in insight.evidence if e.type == "chart"),
+            None
+        )
+
+        if chart_evidence and chart_evidence.reference and Path(chart_evidence.reference).exists():
+            self.add_chart_slide(
+                title=insight.headline,
+                chart_path=chart_evidence.reference,
+                caption=insight.supporting_text[:200]
+            )
+        else:
+            self.add_content_slide(
+                title=insight.headline,
+                bullet_points=[insight.supporting_text]
+            )
+
+    def add_chart_slide_with_notes(
+        self,
+        title: str,
+        chart_path: str,
+        caption: str = '',
+        notes_context: Dict[str, Any] = None,
+    ) -> "KDSPresentation":
+        """
+        Add chart slide with comprehensive slide notes.
+
+        Args:
+            title: Slide title (action title format)
+            chart_path: Path to chart image
+            caption: Brief caption under chart
+            notes_context: Dict with context for speaker notes:
+                - source: Data source attribution
+                - methodology: How the data was calculated
+                - talking_points: List of key points to mention
+                - raw_data: Optional data summary
+                - caveats: Any limitations or assumptions
+
+        Returns:
+            self for method chaining.
+        """
+        # Add the chart slide using existing method
+        self.add_chart_slide(title, chart_path, caption)
+
+        # Get the slide we just added
+        slide = self.prs.slides[-1]
+
+        # Add comprehensive notes if context provided
+        if notes_context:
+            notes_slide = slide.notes_slide
+            notes_text = self._format_comprehensive_notes(notes_context)
+            notes_slide.notes_text_frame.text = notes_text
+
+        return self
+
+    def _format_comprehensive_notes(self, context: Dict[str, Any]) -> str:
+        """
+        Format comprehensive slide notes from context.
+
+        Creates structured notes with:
+        - Data source attribution
+        - Methodology explanation
+        - Key talking points
+        - Raw data reference
+        - Caveats and assumptions
+        """
+        sections = []
+
+        # Source
+        source = context.get('source')
+        if source:
+            sections.append(f"DATA SOURCE\n{source}")
+
+        # Methodology
+        methodology = context.get('methodology')
+        if methodology:
+            sections.append(f"METHODOLOGY\n{methodology}")
+
+        # Talking points
+        talking_points = context.get('talking_points', [])
+        if talking_points:
+            points_text = "\n".join(f"* {point}" for point in talking_points)
+            sections.append(f"KEY TALKING POINTS\n{points_text}")
+
+        # Raw data
+        raw_data = context.get('raw_data')
+        if raw_data:
+            if isinstance(raw_data, dict):
+                data_lines = [f"  {k}: {v}" for k, v in raw_data.items()]
+                data_text = "\n".join(data_lines)
+            else:
+                data_text = str(raw_data)
+            sections.append(f"SUPPORTING DATA\n{data_text}")
+
+        # Caveats
+        caveats = context.get('caveats')
+        if caveats:
+            if isinstance(caveats, list):
+                caveats_text = "\n".join(f"* {c}" for c in caveats)
+            else:
+                caveats_text = caveats
+            sections.append(f"CAVEATS & ASSUMPTIONS\n{caveats_text}")
+
+        return "\n\n".join(sections)
+
+    def add_native_chart_slide(
+        self,
+        title: str,
+        chart_type: str,
+        data: Dict[str, Any],
+        caption: str = '',
+    ) -> "KDSPresentation":
+        """
+        Add slide with native, editable PowerPoint chart.
+
+        Native charts can be edited directly in PowerPoint,
+        unlike image-based charts.
+
+        Args:
+            title: Slide title
+            chart_type: One of 'bar', 'column', 'line', 'pie', 'area'
+            data: Dict with structure:
+                {
+                    'categories': ['Q1', 'Q2', 'Q3'],
+                    'series': [
+                        {'name': 'Revenue', 'values': [100, 120, 140]},
+                        {'name': 'Cost', 'values': [80, 90, 100]}
+                    ]
+                }
+            caption: Optional caption text
+
+        Returns:
+            self for method chaining.
+        """
+        # Map string types to PowerPoint chart types
+        chart_type_map = {
+            'bar': XL_CHART_TYPE.BAR_CLUSTERED,
+            'bar_stacked': XL_CHART_TYPE.BAR_STACKED,
+            'column': XL_CHART_TYPE.COLUMN_CLUSTERED,
+            'column_stacked': XL_CHART_TYPE.COLUMN_STACKED,
+            'line': XL_CHART_TYPE.LINE,
+            'line_markers': XL_CHART_TYPE.LINE_MARKERS,
+            'pie': XL_CHART_TYPE.PIE,
+            'area': XL_CHART_TYPE.AREA,
+            'area_stacked': XL_CHART_TYPE.AREA_STACKED,
+        }
+
+        xl_chart_type = chart_type_map.get(chart_type.lower())
+        if xl_chart_type is None:
+            raise ValueError(f"Unsupported chart type: {chart_type}. "
+                            f"Supported: {list(chart_type_map.keys())}")
+
+        # Create slide
+        slide_layout = self.prs.slide_layouts[6]  # Blank layout
+        slide = self.prs.slides.add_slide(slide_layout)
+        self._set_slide_background(slide)
+
+        # Add title
+        self._add_text_frame(
+            slide,
+            left=Inches(0.75),
+            top=Inches(0.5),
+            width=Inches(11.83),
+            height=Inches(0.75),
+            text=title,
+            font_size=32,
+            bold=True,
+            alignment=PP_ALIGN.LEFT,
+        )
+
+        # Build chart data
+        chart_data = CategoryChartData()
+        chart_data.categories = data.get('categories', [])
+
+        for series in data.get('series', []):
+            chart_data.add_series(series['name'], series['values'])
+
+        # Add chart to slide
+        x, y, cx, cy = Inches(0.75), Inches(1.5), Inches(11.83), Inches(5.25)
+        chart = slide.shapes.add_chart(
+            xl_chart_type, x, y, cx, cy, chart_data
+        ).chart
+
+        # Apply KDS styling to chart
+        self._apply_kds_chart_style(chart, xl_chart_type)
+
+        # Add caption if provided
+        if caption:
+            self._add_text_frame(
+                slide,
+                left=Inches(0.75),
+                top=Inches(6.85),
+                width=Inches(11.83),
+                height=Inches(0.4),
+                text=caption,
+                font_size=12,
+                bold=False,
+                alignment=PP_ALIGN.CENTER,
+            )
+
+        self._slide_count += 1
+        logger.debug(f"Added native chart slide: {title}")
+        return self
+
+    def _apply_kds_chart_style(self, chart, chart_type) -> None:
+        """
+        Apply KDS brand styling to native PowerPoint chart.
+
+        - Kearney Purple for primary series
+        - No gridlines
+        - Clean axis styling
+        """
+        # KDS color palette (no green!)
+        kds_colors = [
+            RGBColor(0x78, 0x23, 0xDC),  # Kearney Purple
+            RGBColor(0x9B, 0x4D, 0xCA),  # Light purple
+            RGBColor(0x5C, 0x1B, 0xA8),  # Dark purple
+            RGBColor(0xB2, 0x66, 0xFF),  # Bright purple
+            RGBColor(0x66, 0x66, 0x66),  # Gray
+            RGBColor(0x99, 0x99, 0x99),  # Light gray
+        ]
+
+        # Apply colors to series
+        plot = chart.plots[0]
+        for i, series in enumerate(plot.series):
+            color = kds_colors[i % len(kds_colors)]
+            series.format.fill.solid()
+            series.format.fill.fore_color.rgb = color
+
+        # Style axes if present
+        try:
+            if hasattr(chart, 'category_axis'):
+                cat_axis = chart.category_axis
+                cat_axis.has_major_gridlines = False
+                cat_axis.has_minor_gridlines = False
+
+            if hasattr(chart, 'value_axis'):
+                val_axis = chart.value_axis
+                val_axis.has_major_gridlines = False
+                val_axis.has_minor_gridlines = False
+        except Exception:
+            # Some chart types don't have these axes
+            pass
+
+    def add_placeholder_slide(
+        self,
+        title: str,
+        placeholder_text: str,
+        replacement_instructions: str = '',
+        dimensions: Tuple[float, float] = None,
+    ) -> "KDSPresentation":
+        """
+        Add a slide with a placeholder for manual content insertion.
+
+        Use this when automated generation can't produce the needed
+        visual, but the slide structure should be prepared.
+
+        Args:
+            title: Slide title
+            placeholder_text: What should go in this space
+            replacement_instructions: How to create the replacement content
+            dimensions: Optional (width, height) in inches for placeholder box
+
+        Returns:
+            self for method chaining.
+        """
+        slide_layout = self.prs.slide_layouts[6]  # Blank layout
+        slide = self.prs.slides.add_slide(slide_layout)
+        self._set_slide_background(slide)
+
+        # Add title
+        self._add_text_frame(
+            slide,
+            left=Inches(0.75),
+            top=Inches(0.5),
+            width=Inches(11.83),
+            height=Inches(0.75),
+            text=title,
+            font_size=32,
+            bold=True,
+            alignment=PP_ALIGN.LEFT,
+        )
+
+        # Determine placeholder dimensions
+        if dimensions:
+            width, height = dimensions
+        else:
+            width, height = 11.0, 5.0
+
+        # Add placeholder box
+        left = Inches((13.33 - width) / 2)  # Center horizontally
+        top = Inches(1.5)
+
+        placeholder_box = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE,
+            left, top, Inches(width), Inches(height)
+        )
+
+        # Style placeholder box
+        placeholder_box.fill.solid()
+        placeholder_box.fill.fore_color.rgb = RGBColor(0x2A, 0x2A, 0x2A)  # Dark gray
+        placeholder_box.line.color.rgb = KDSColors.PRIMARY  # Purple border
+        placeholder_box.line.width = Pt(2)
+
+        # Add placeholder text inside the box
+        tf = placeholder_box.text_frame
+        tf.word_wrap = True
+
+        # Main placeholder text
+        p = tf.paragraphs[0]
+        p.text = f"[PLACEHOLDER: {placeholder_text}]"
+        p.font.size = Pt(18)
+        p.font.bold = True
+        p.font.color.rgb = KDSColors.PRIMARY
+        p.alignment = PP_ALIGN.CENTER
+
+        # Add instructions if provided
+        if replacement_instructions:
+            p2 = tf.add_paragraph()
+            p2.text = f"\n{replacement_instructions}"
+            p2.font.size = Pt(12)
+            p2.font.color.rgb = KDSColors.GRAY_400
+            p2.alignment = PP_ALIGN.CENTER
+
+        # Add note about placeholder
+        notes_slide = slide.notes_slide
+        notes_slide.notes_text_frame.text = (
+            f"PLACEHOLDER SLIDE\n\n"
+            f"Content needed: {placeholder_text}\n\n"
+            f"Instructions: {replacement_instructions or 'Replace with final visual'}"
+        )
+
+        self._slide_count += 1
+        logger.debug(f"Added placeholder slide: {title}")
         return self
 
     @property

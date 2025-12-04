@@ -116,6 +116,40 @@ from core.memory_integration import (
     get_client_overrides,
 )
 
+# Insight Engine (v3.2)
+from core.insight_engine import (
+    Insight,
+    Evidence,
+    InsightCatalog,
+    InsightEngine,
+)
+
+# Action Titles (v3.2)
+from core.action_titles import (
+    is_weak_title,
+    transform_to_action_title,
+    suggest_action_titles,
+    validate_action_title,
+)
+
+# Spec Diff Engine (v3.2)
+from core.spec_diff import (
+    compute_diff,
+    assess_plan_impact,
+    SpecChange,
+    ChangeType,
+    ImpactLevel,
+    DiffResult,
+)
+
+# Plan Updater (v3.2)
+from core.plan_updater import (
+    PlanUpdater,
+    PlanUpdateResult,
+    TaskUpdate,
+    update_plan_from_diff,
+)
+
 __all__ = [
     # Brand Guard
     "check_file",
@@ -204,4 +238,26 @@ __all__ = [
     "update_session_after_task",
     "apply_user_defaults_to_spec",
     "get_client_overrides",
+    # Insight Engine (v3.2)
+    "Insight",
+    "Evidence",
+    "InsightCatalog",
+    "InsightEngine",
+    # Action Titles (v3.2)
+    "is_weak_title",
+    "transform_to_action_title",
+    "suggest_action_titles",
+    "validate_action_title",
+    # Spec Diff Engine (v3.2)
+    "compute_diff",
+    "assess_plan_impact",
+    "SpecChange",
+    "ChangeType",
+    "ImpactLevel",
+    "DiffResult",
+    # Plan Updater (v3.2)
+    "PlanUpdater",
+    "PlanUpdateResult",
+    "TaskUpdate",
+    "update_plan_from_diff",
 ]
