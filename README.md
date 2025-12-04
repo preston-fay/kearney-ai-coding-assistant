@@ -1,4 +1,4 @@
-# Kearney AI Coding Assistant (KACA)
+# Kearney AI Coding Assistant (KACA) v3.2
 
 **AI-powered project scaffolding with brand compliance for Kearney consultants.**
 
@@ -65,6 +65,73 @@ Follow the prompts to define your project, then:
 /review    # Check brand compliance
 /export    # Create deliverables
 ```
+
+---
+
+## Key Features (v3.2)
+
+### Express Interviews
+Skip lengthy questionnaires with express mode:
+```bash
+/interview --express           # 6-10 focused questions
+/interview --template=quarterly_kpi_review  # Pre-filled templates
+```
+
+### Content Intelligence
+Automatically extract insights and generate consulting-style headlines:
+- **Insight Engine**: Extracts comparisons, trends, concentration risks
+- **Action Titles**: Transforms "Revenue Overview" → "Northeast Drives 60% of Growth"
+
+### Enhanced Presentations
+- **Native PowerPoint Charts**: Editable bar, column, line, pie charts (not images)
+- **Rich Speaker Notes**: Source, methodology, talking points included
+- **Insight-to-Deck**: Generate presentations directly from insight catalogs
+
+### Smart Planning
+Update plans incrementally when requirements change:
+```bash
+/plan update    # Preserves completed work, updates affected tasks
+```
+
+### New Chart Types
+```python
+chart.waterfall(...)      # Revenue bridges
+chart.stacked_bar(...)    # Composition over time
+chart.combo(...)          # Dual-axis (bar + line)
+chart.bullet(...)         # Performance vs target
+chart.histogram(...)      # Distributions
+```
+
+### Telemetry & Metrics
+Track usage and quality:
+```bash
+/metrics        # View session stats, compliance rates, command usage
+```
+
+### User Preferences
+Persistent settings across projects:
+```bash
+/profile view          # See current preferences
+/profile set chart.default_type horizontal_bar
+```
+
+---
+
+## Available Commands
+
+| Command | Description |
+|---------|-------------|
+| `/interview` | Start requirements gathering (supports `--express`, `--template`) |
+| `/plan` | Generate execution plan |
+| `/plan update` | Update plan incrementally after spec changes |
+| `/execute` | Execute next task |
+| `/review` | Check brand compliance |
+| `/export` | Create final deliverables |
+| `/profile` | Manage user preferences |
+| `/metrics` | View telemetry and usage stats |
+| `/status` | Show project progress |
+| `/spec` | View current specification |
+| `/edit` | Modify specification |
 
 ---
 
