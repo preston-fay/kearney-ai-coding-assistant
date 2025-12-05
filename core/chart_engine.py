@@ -1258,6 +1258,395 @@ class KDSChart:
         plt.tight_layout()
         return self
 
+    def heatmap(
+        self,
+        data: Sequence[Sequence[float]],
+        row_labels: Optional[Sequence[str]] = None,
+        col_labels: Optional[Sequence[str]] = None,
+        title: str = "",
+        show_values: bool = True,
+        cmap: Optional[str] = None,
+        vmin: Optional[float] = None,
+        vmax: Optional[float] = None,
+    ) -> "KDSChart":
+        """
+        Create a KDS-compliant heatmap.
+
+        Common use: Correlation matrices, cross-tabulations, intensity grids.
+
+        Args:
+            data: 2D array of values (list of lists or numpy array).
+            row_labels: Labels for rows (y-axis).
+            col_labels: Labels for columns (x-axis).
+            title: Chart title.
+            show_values: If True, show values in cells.
+            cmap: Colormap name. Defaults to purple gradient.
+            vmin: Minimum value for color scale.
+            vmax: Maximum value for color scale.
+
+        Returns:
+            self for method chaining.
+        """
+        import numpy as np
+
+        self.fig, self.ax = self._create_figure()
+
+        data_array = np.array(data)
+        text_color = KDSColors.TEXT_LIGHT if self.dark_mode else KDSColors.TEXT_DARK
+
+        # KDS-compliant purple colormap
+        if cmap is None:
+            from matplotlib.colors import LinearSegmentedColormap
+            colors = [KDSColors.BACKGROUND_DARK, KDSColors.PRIMARY, "#B266FF"]
+            cmap = LinearSegmentedColormap.from_list("kds_purple", colors)
+
+        im = self.ax.imshow(data_array, cmap=cmap, aspect='auto', vmin=vmin, vmax=vmax)
+
+        # Add colorbar
+        cbar = self.fig.colorbar(im, ax=self.ax, shrink=0.8)
+        cbar.ax.yaxis.set_tick_params(color=text_color)
+        plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color=text_color)
+
+        # Set labels
+        if col_labels is not None:
+            self.ax.set_xticks(range(len(col_labels)))
+            self.ax.set_xticklabels(col_labels, rotation=45, ha='right')
+        if row_labels is not None:
+            self.ax.set_yticks(range(len(row_labels)))
+            self.ax.set_yticklabels(row_labels)
+
+        # Show values in cells
+        if show_values:
+            for i in range(data_array.shape[0]):
+                for j in range(data_array.shape[1]):
+                    val = data_array[i, j]
+                    # Choose text color based on cell brightness
+                    cell_color = "white" if val > (data_array.max() + data_array.min()) / 2 else "black"
+                    formatted_val = self._format_value(val) if self.smart_numbers else f"{val:.2f}"
+                    self.ax.text(j, i, formatted_val, ha="center", va="center",
+                                color=cell_color, fontsize=9)
+
+        if title:
+            self.ax.set_title(title, fontsize=14, fontweight=600, pad=20)
+
+        plt.tight_layout()
+        return self
+
+    def boxplot(
+        self,
+        data: Union[Sequence[float], Sequence[Sequence[float]]],
+        labels: Optional[Sequence[str]] = None,
+        title: str = "",
+        xlabel: str = "",
+        ylabel: str = "",
+        show_outliers: bool = True,
+        horizontal: bool = False,
+        color: Optional[str] = None,
+    ) -> "KDSChart":
+        """
+        Create a KDS-compliant box plot.
+
+        Common use: Distribution comparison, outlier detection, statistical summary.
+
+        Args:
+            data: Single dataset or list of datasets to compare.
+            labels: Labels for each box.
+            title: Chart title.
+            xlabel: X-axis label.
+            ylabel: Y-axis label.
+            show_outliers: If True, show outlier points.
+            horizontal: If True, draw horizontal boxes.
+            color: Box fill color.
+
+        Returns:
+            self for method chaining.
+        """
+        self.fig, self.ax = self._create_figure()
+
+        if color is None:
+            color = KDSColors.PRIMARY
+
+        text_color = KDSColors.TEXT_LIGHT if self.dark_mode else KDSColors.TEXT_DARK
+
+        # Ensure data is list of lists for multiple boxes
+        if isinstance(data[0], (int, float)):
+            data = [data]
+
+        bp = self.ax.boxplot(
+            data,
+            vert=not horizontal,
+            patch_artist=True,
+            showfliers=show_outliers,
+            labels=labels,
+        )
+
+        # Style the boxes
+        for patch in bp['boxes']:
+            patch.set_facecolor(color)
+            patch.set_alpha(0.7)
+        for whisker in bp['whiskers']:
+            whisker.set_color(text_color)
+        for cap in bp['caps']:
+            cap.set_color(text_color)
+        for median in bp['medians']:
+            median.set_color(KDSColors.TEXT_LIGHT)
+            median.set_linewidth(2)
+        if show_outliers:
+            for flier in bp['fliers']:
+                flier.set_markerfacecolor(color)
+                flier.set_markeredgecolor(text_color)
+
+        if xlabel:
+            self.ax.set_xlabel(xlabel)
+        if ylabel:
+            self.ax.set_ylabel(ylabel)
+        if title:
+            self.ax.set_title(title, fontsize=14, fontweight=600, pad=20)
+
+        self.ax.spines["top"].set_visible(False)
+        self.ax.spines["right"].set_visible(False)
+
+        plt.tight_layout()
+        return self
+
+    def area(
+        self,
+        x_data: Sequence,
+        y_data: Union[Sequence[float], List[Sequence[float]]],
+        title: str = "",
+        xlabel: str = "",
+        ylabel: str = "",
+        labels: Optional[Sequence[str]] = None,
+        stacked: bool = False,
+        alpha: float = 0.7,
+        colors: Optional[List[str]] = None,
+    ) -> "KDSChart":
+        """
+        Create a KDS-compliant area chart.
+
+        Common use: Time series with magnitude, cumulative totals, part-to-whole over time.
+
+        Args:
+            x_data: X-axis values (e.g., dates, categories).
+            y_data: Y values - single series or list of series for stacked.
+            title: Chart title.
+            xlabel: X-axis label.
+            ylabel: Y-axis label.
+            labels: Labels for legend (if multiple series).
+            stacked: If True and multiple series, stack the areas.
+            alpha: Fill transparency.
+            colors: Custom colors for each series.
+
+        Returns:
+            self for method chaining.
+        """
+        self.fig, self.ax = self._create_figure()
+
+        # Normalize y_data to list of series
+        if not isinstance(y_data[0], (list, tuple)):
+            y_data = [y_data]
+
+        if colors is None:
+            colors = self._get_colors(len(y_data), chart_type="area")
+
+        if stacked and len(y_data) > 1:
+            self.ax.stackplot(x_data, *y_data, labels=labels, colors=colors, alpha=alpha)
+        else:
+            for i, series in enumerate(y_data):
+                label = labels[i] if labels and i < len(labels) else None
+                self.ax.fill_between(x_data, series, alpha=alpha, color=colors[i], label=label)
+                self.ax.plot(x_data, series, color=colors[i], linewidth=2)
+
+        if xlabel:
+            self.ax.set_xlabel(xlabel)
+        if ylabel:
+            self.ax.set_ylabel(ylabel)
+        if title:
+            self.ax.set_title(title, fontsize=14, fontweight=600, pad=20)
+        if labels:
+            self.ax.legend()
+
+        self._setup_axis_formatter(self.ax, axis='y')
+
+        self.ax.spines["top"].set_visible(False)
+        self.ax.spines["right"].set_visible(False)
+
+        plt.tight_layout()
+        return self
+
+    def donut(
+        self,
+        data: Sequence[float],
+        labels: Sequence[str],
+        title: str = "",
+        show_percentages: bool = True,
+        colors: Optional[List[str]] = None,
+        center_text: Optional[str] = None,
+        center_value: Optional[str] = None,
+    ) -> "KDSChart":
+        """
+        Create a KDS-compliant donut chart.
+
+        Common use: Part-to-whole with center metric, KPI display with breakdown.
+
+        Args:
+            data: Values for each slice.
+            labels: Labels for each slice.
+            title: Chart title.
+            show_percentages: If True, show percentage labels.
+            colors: Optional custom colors. Uses KDS palette if None.
+            center_text: Optional label text in center of donut.
+            center_value: Optional value text in center of donut.
+
+        Returns:
+            self for method chaining.
+        """
+        self.fig, self.ax = self._create_figure()
+
+        if colors is None:
+            colors = self._get_colors(len(data), chart_type="pie", values=list(data))
+
+        text_color = KDSColors.TEXT_LIGHT if self.dark_mode else KDSColors.TEXT_DARK
+
+        # Create donut (pie with white circle in center)
+        if show_percentages:
+            wedges, texts, autotexts = self.ax.pie(
+                data,
+                labels=labels,
+                colors=colors,
+                autopct="%1.1f%%",
+                startangle=90,
+                pctdistance=0.75,
+                labeldistance=1.15,
+                wedgeprops=dict(width=0.5, edgecolor=KDSColors.BACKGROUND_DARK if self.dark_mode else KDSColors.BACKGROUND_LIGHT),
+            )
+            for autotext in autotexts:
+                autotext.set_color(text_color)
+                autotext.set_fontsize(9)
+                autotext.set_fontweight(500)
+        else:
+            wedges, texts = self.ax.pie(
+                data,
+                labels=labels,
+                colors=colors,
+                startangle=90,
+                labeldistance=1.15,
+                wedgeprops=dict(width=0.5, edgecolor=KDSColors.BACKGROUND_DARK if self.dark_mode else KDSColors.BACKGROUND_LIGHT),
+            )
+
+        # Style the labels
+        for text in texts:
+            text.set_color(text_color)
+            text.set_fontsize(10)
+
+        # Add center text
+        if center_value or center_text:
+            if center_value:
+                self.ax.text(0, 0.05, center_value, ha='center', va='center',
+                            fontsize=24, fontweight='bold', color=text_color)
+            if center_text:
+                y_pos = -0.15 if center_value else 0
+                self.ax.text(0, y_pos, center_text, ha='center', va='center',
+                            fontsize=12, color=KDSColors.GRAY_400)
+
+        if title:
+            self.ax.set_title(title, fontsize=14, fontweight=600, pad=20)
+
+        self.ax.axis("equal")
+        plt.tight_layout()
+        return self
+
+    def sankey(
+        self,
+        flows: Sequence[float],
+        labels: Sequence[str],
+        orientations: Optional[Sequence[int]] = None,
+        title: str = "",
+        unit: str = "",
+        color: Optional[str] = None,
+    ) -> "KDSChart":
+        """
+        Create a KDS-compliant Sankey diagram.
+
+        Common use: Flow visualization, budget allocation, process flows,
+        energy/resource transfers.
+
+        Args:
+            flows: Flow values (positive = in, negative = out). First value
+                   is the trunk/main flow, subsequent values branch off.
+            labels: Labels for each flow connection point.
+            orientations: Direction of each flow (-1=left, 0=down, 1=right).
+                         If None, auto-assigns based on flow sign.
+            title: Chart title.
+            unit: Unit label for flow values (e.g., "MW", "$M").
+            color: Main flow color. Uses Kearney Purple if None.
+
+        Returns:
+            self for method chaining.
+
+        Example:
+            # Budget allocation example
+            chart.sankey(
+                flows=[100, -30, -40, -20, -10],  # 100 in, distributed out
+                labels=['Budget', 'Marketing', 'R&D', 'Operations', 'Admin'],
+                title='Budget Allocation Flow',
+                unit='$M'
+            )
+        """
+        from matplotlib.sankey import Sankey
+
+        self.fig, self.ax = self._create_figure()
+
+        if color is None:
+            color = KDSColors.PRIMARY
+
+        text_color = KDSColors.TEXT_LIGHT if self.dark_mode else KDSColors.TEXT_DARK
+
+        # Auto-assign orientations if not provided
+        if orientations is None:
+            orientations = []
+            for i, flow in enumerate(flows):
+                if i == 0:
+                    orientations.append(0)  # Main trunk goes down
+                elif flow >= 0:
+                    orientations.append(-1)  # Inputs from left
+                else:
+                    orientations.append(1)  # Outputs to right
+
+        # Create Sankey diagram
+        sankey = Sankey(
+            ax=self.ax,
+            unit=unit,
+            scale=1.0 / max(abs(f) for f in flows) * 0.5,
+            offset=0.3,
+            head_angle=120,
+            format='%.1f',
+            gap=0.3,
+        )
+
+        sankey.add(
+            flows=list(flows),
+            labels=list(labels),
+            orientations=list(orientations),
+            facecolor=color,
+            edgecolor=text_color,
+            alpha=0.8,
+        )
+
+        diagrams = sankey.finish()
+
+        # Style the text
+        for text in self.ax.texts:
+            text.set_color(text_color)
+            text.set_fontsize(10)
+
+        if title:
+            self.ax.set_title(title, fontsize=14, fontweight=600, pad=20)
+
+        self.ax.axis("off")
+        plt.tight_layout()
+        return self
+
     def save(
         self,
         path: Union[str, Path],
