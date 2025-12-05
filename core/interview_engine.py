@@ -135,6 +135,40 @@ def express_interview_exists(project_type: str) -> bool:
     return express_path.exists()
 
 
+def should_use_express_mode(project_type: str, explicit_mode: str = None) -> bool:
+    """
+    Determine if express mode should be used for an interview.
+
+    Checks user preferences and express interview availability.
+    An explicit mode parameter overrides user preferences.
+
+    Args:
+        project_type: Type ID (e.g., 'modeling', 'analytics').
+        explicit_mode: If provided ('express' or 'full'), overrides preferences.
+
+    Returns:
+        True if express mode should be used, False otherwise.
+    """
+    # Explicit mode overrides everything
+    if explicit_mode == 'express':
+        return express_interview_exists(project_type)
+    if explicit_mode == 'full':
+        return False
+
+    # Check user preference
+    try:
+        from core.memory import get_user_preference
+        default_mode = get_user_preference('preferences.interview.default_mode', 'full')
+    except ImportError:
+        default_mode = 'full'
+
+    # Use express if user prefers it AND express interview exists
+    if default_mode == 'express':
+        return express_interview_exists(project_type)
+
+    return False
+
+
 def load_interview_tree(
     project_type: str,
     express: bool = False,

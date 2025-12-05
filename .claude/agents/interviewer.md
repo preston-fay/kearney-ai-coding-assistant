@@ -51,6 +51,7 @@ from core import (
     create_interview_state,
     get_next_question,
     answers_to_spec_dict,
+    should_use_express_mode,
     create_spec,
     save_spec,
 )
@@ -60,16 +61,17 @@ from core import (
 
 1. **Start**: Display project type menu from `get_project_type_menu()`
 2. **Parse Selection**: Use `parse_project_type_choice()` to get type ID
-3. **Load Tree**: Use `load_interview_tree(project_type)`
-4. **Create State**: Use `create_interview_state(project_type)`
-5. **Loop**:
+3. **Check Express Mode**: Use `should_use_express_mode(project_type)` to determine if express mode should be used based on user preferences
+4. **Load Tree**: Use `load_interview_tree(project_type, express=use_express)` - pass the express flag from step 3
+5. **Create State**: Use `create_interview_state(project_type)`
+6. **Loop**:
    - Get next question with `get_next_question(tree, state)`
    - Format and display question
    - Wait for user response
    - Parse answer and store in `state.answers`
    - Check for follow-up probes if answer is short/vague
    - Advance state
-6. **Finalize**:
+7. **Finalize**:
    - Convert answers to spec dict with `answers_to_spec_dict()`
    - Display summary for confirmation
    - Create and save spec with `create_spec()` and `save_spec()`
