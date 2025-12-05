@@ -56,6 +56,7 @@ from core.interview_engine import (
     create_interview_state,
     get_next_question,
     answers_to_spec_dict,
+    should_use_express_mode,
 )
 
 # Web Application Support (v2.1)
@@ -201,6 +202,7 @@ __all__ = [
     "create_interview_state",
     "get_next_question",
     "answers_to_spec_dict",
+    "should_use_express_mode",
     # Web Application Support (v2.1)
     "KDSTheme",
     "KDSData",

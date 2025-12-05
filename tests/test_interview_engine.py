@@ -31,6 +31,7 @@ from core.interview_engine import (
     answers_to_spec_dict,
     PROJECT_TYPES,
     express_interview_exists,
+    should_use_express_mode,
     list_available_templates,
     load_spec_template,
 )
@@ -675,6 +676,83 @@ sections:
         assert tree is not None
         assert tree.id == 'analytics'
         assert 'express' not in tree.id.lower()
+
+
+class TestShouldUseExpressMode:
+    """Tests for should_use_express_mode() helper function."""
+
+    def test_explicit_express_mode_overrides_preferences(self, tmp_path):
+        """When explicit_mode='express', should return True if express exists."""
+        (tmp_path / 'analytics_express.yaml').write_text('id: analytics_express')
+
+        with patch.object(interview_engine, 'INTERVIEWS_DIR', tmp_path):
+            result = should_use_express_mode('analytics', explicit_mode='express')
+            assert result is True
+
+    def test_explicit_express_mode_false_when_no_express_file(self, tmp_path):
+        """When explicit_mode='express' but no express file, should return False."""
+        (tmp_path / 'analytics.yaml').write_text('id: analytics')
+        # No express file
+
+        with patch.object(interview_engine, 'INTERVIEWS_DIR', tmp_path):
+            result = should_use_express_mode('analytics', explicit_mode='express')
+            assert result is False
+
+    def test_explicit_full_mode_always_returns_false(self, tmp_path):
+        """When explicit_mode='full', should always return False."""
+        (tmp_path / 'analytics_express.yaml').write_text('id: analytics_express')
+
+        with patch.object(interview_engine, 'INTERVIEWS_DIR', tmp_path):
+            result = should_use_express_mode('analytics', explicit_mode='full')
+            assert result is False
+
+    def test_user_preference_express_mode(self, tmp_path):
+        """When user prefers express and express file exists, should return True."""
+        (tmp_path / 'analytics_express.yaml').write_text('id: analytics_express')
+
+        with patch.object(interview_engine, 'INTERVIEWS_DIR', tmp_path):
+            with patch('core.memory.get_user_preference', return_value='express'):
+                result = should_use_express_mode('analytics')
+                assert result is True
+
+    def test_user_preference_full_mode(self, tmp_path):
+        """When user prefers full mode, should return False."""
+        (tmp_path / 'analytics_express.yaml').write_text('id: analytics_express')
+
+        with patch.object(interview_engine, 'INTERVIEWS_DIR', tmp_path):
+            with patch('core.memory.get_user_preference', return_value='full'):
+                result = should_use_express_mode('analytics')
+                assert result is False
+
+    def test_default_preference_is_full(self, tmp_path):
+        """Without explicit preference, should default to full (return False)."""
+        (tmp_path / 'analytics_express.yaml').write_text('id: analytics_express')
+
+        with patch.object(interview_engine, 'INTERVIEWS_DIR', tmp_path):
+            # Mock get_user_preference to return default 'full'
+            with patch('core.memory.get_user_preference', return_value='full'):
+                result = should_use_express_mode('analytics')
+                assert result is False
+
+    def test_express_preference_but_no_express_file(self, tmp_path):
+        """When user prefers express but no express file, should return False."""
+        (tmp_path / 'analytics.yaml').write_text('id: analytics')
+        # No express file
+
+        with patch.object(interview_engine, 'INTERVIEWS_DIR', tmp_path):
+            with patch('core.memory.get_user_preference', return_value='express'):
+                result = should_use_express_mode('analytics')
+                assert result is False
+
+    def test_all_project_types_with_express_preference(self):
+        """All 8 project types should return True when user prefers express."""
+        project_types = ['analytics', 'presentation', 'dashboard', 'modeling',
+                        'proposal', 'research', 'data_engineering', 'webapp']
+
+        with patch('core.memory.get_user_preference', return_value='express'):
+            for ptype in project_types:
+                result = should_use_express_mode(ptype)
+                assert result is True, f"Expected True for {ptype} with express preference"
 
 
 class TestTemplates:

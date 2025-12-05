@@ -434,6 +434,167 @@ class TestNewChartTypes:
         chart.save(str(output))
         assert output.exists()
 
+    def test_heatmap_creates_figure(self, tmp_path):
+        """Heatmap should create a figure."""
+        chart = KDSChart()
+        data = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+        chart.heatmap(
+            data=data,
+            row_labels=['A', 'B', 'C'],
+            col_labels=['X', 'Y', 'Z'],
+            title='Test Heatmap'
+        )
+        output = tmp_path / "heatmap.png"
+        chart.save(str(output))
+        assert output.exists()
+
+    def test_heatmap_method_chaining(self):
+        """Heatmap should support method chaining."""
+        chart = KDSChart()
+        result = chart.heatmap(
+            data=[[1, 2], [3, 4]],
+            title='Test'
+        )
+        assert result is chart
+
+    def test_heatmap_without_values(self, tmp_path):
+        """Heatmap should work without value annotations."""
+        chart = KDSChart()
+        chart.heatmap(
+            data=[[1, 2], [3, 4]],
+            show_values=False
+        )
+        output = tmp_path / "heatmap_no_values.png"
+        chart.save(str(output))
+        assert output.exists()
+
+    def test_boxplot_creates_figure(self, tmp_path):
+        """Boxplot should create a figure."""
+        chart = KDSChart()
+        data = [[1, 2, 3, 4, 5, 10], [2, 3, 4, 5, 6, 7]]
+        chart.boxplot(
+            data=data,
+            labels=['Group A', 'Group B'],
+            title='Test Boxplot'
+        )
+        output = tmp_path / "boxplot.png"
+        chart.save(str(output))
+        assert output.exists()
+
+    def test_boxplot_single_dataset(self, tmp_path):
+        """Boxplot should work with single dataset."""
+        chart = KDSChart()
+        chart.boxplot(
+            data=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            title='Single Boxplot'
+        )
+        output = tmp_path / "boxplot_single.png"
+        chart.save(str(output))
+        assert output.exists()
+
+    def test_boxplot_horizontal(self, tmp_path):
+        """Boxplot should support horizontal orientation."""
+        chart = KDSChart()
+        chart.boxplot(
+            data=[[1, 2, 3, 4, 5], [2, 3, 4, 5, 6]],
+            labels=['A', 'B'],
+            horizontal=True
+        )
+        output = tmp_path / "boxplot_h.png"
+        chart.save(str(output))
+        assert output.exists()
+
+    def test_area_creates_figure(self, tmp_path):
+        """Area chart should create a figure."""
+        chart = KDSChart()
+        x = [1, 2, 3, 4, 5]
+        y = [10, 15, 13, 17, 20]
+        chart.area(
+            x_data=x,
+            y_data=y,
+            title='Test Area'
+        )
+        output = tmp_path / "area.png"
+        chart.save(str(output))
+        assert output.exists()
+
+    def test_area_stacked(self, tmp_path):
+        """Area chart should support stacking."""
+        chart = KDSChart()
+        x = [1, 2, 3, 4]
+        y = [[10, 15, 13, 17], [5, 8, 6, 10]]
+        chart.area(
+            x_data=x,
+            y_data=y,
+            labels=['Series A', 'Series B'],
+            stacked=True
+        )
+        output = tmp_path / "area_stacked.png"
+        chart.save(str(output))
+        assert output.exists()
+
+    def test_donut_creates_figure(self, tmp_path):
+        """Donut chart should create a figure."""
+        chart = KDSChart()
+        chart.donut(
+            data=[30, 20, 50],
+            labels=['A', 'B', 'C'],
+            title='Test Donut'
+        )
+        output = tmp_path / "donut.png"
+        chart.save(str(output))
+        assert output.exists()
+
+    def test_donut_with_center_text(self, tmp_path):
+        """Donut chart should support center text."""
+        chart = KDSChart()
+        chart.donut(
+            data=[30, 20, 50],
+            labels=['Marketing', 'R&D', 'Operations'],
+            center_value='$1.2M',
+            center_text='Total Budget'
+        )
+        output = tmp_path / "donut_center.png"
+        chart.save(str(output))
+        assert output.exists()
+
+    def test_sankey_creates_figure(self, tmp_path):
+        """Sankey diagram should create a figure."""
+        chart = KDSChart()
+        chart.sankey(
+            flows=[100, -30, -40, -30],
+            labels=['Budget', 'Marketing', 'R&D', 'Operations'],
+            title='Test Sankey'
+        )
+        output = tmp_path / "sankey.png"
+        chart.save(str(output))
+        assert output.exists()
+
+    def test_sankey_with_unit(self, tmp_path):
+        """Sankey diagram should support unit labels."""
+        chart = KDSChart()
+        chart.sankey(
+            flows=[100, -25, -35, -40],
+            labels=['Revenue', 'COGS', 'OpEx', 'Profit'],
+            unit='$M',
+            title='P&L Flow'
+        )
+        output = tmp_path / "sankey_unit.png"
+        chart.save(str(output))
+        assert output.exists()
+
+    def test_sankey_custom_orientations(self, tmp_path):
+        """Sankey diagram should support custom orientations."""
+        chart = KDSChart()
+        chart.sankey(
+            flows=[100, -50, -50],
+            labels=['Input', 'Output A', 'Output B'],
+            orientations=[0, 1, -1]  # Down, right, left
+        )
+        output = tmp_path / "sankey_orient.png"
+        chart.save(str(output))
+        assert output.exists()
+
 
 class TestChartRecommendation:
     """Tests for chart type recommendation."""
